@@ -1,0 +1,14 @@
+services:
+  database:
+    image: postgres:17.2
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: database-user
+      POSTGRES_PASSWORD: 7265edb5-0ab2-49a3-aeb2-b3a3c3725e60
+      POSTGRES_DB: recrutez-moi
+    volumes:
+      - database-data:/var/lib/postgresql/data
+
+volumes:
+  database-data:
