@@ -17,9 +17,9 @@ export const usersTable = pgTable("users", {
   lastname: varchar({ length: 255 }).notNull(),
   phone: varchar({ length: 255 }),
   password: varchar({ length: 255 }).notNull(),
-  birthdate: date(),
-  created_at: date().notNull(),
-  modified_at: date().notNull(),
+  birthdate: date({ mode: "date" }),
+  created_at: date({ mode: "date" }).notNull(),
+  modified_at: date({ mode: "date" }).notNull(),
 });
 
 /* SKILLS */

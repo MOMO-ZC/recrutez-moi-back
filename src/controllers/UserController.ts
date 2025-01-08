@@ -1,51 +1,44 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { db } from "../db";
-import { usersTable } from "../db/schema";
-import { eq } from "drizzle-orm";
 import { LogInRequest, RegisterRequest } from "../requests/UserRequests";
+import UserRepository from "../db/repositories/UserRepository";
+import { UserCreationError } from "../exceptions/UserExceptions";
+
+const userRepository = new UserRepository();
 
 export const register = async (request: RegisterRequest): Promise<number> => {
-  try {
-    const hashedPassword = await bcrypt.hash(request.password, 10);
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(request.password, 10);
 
-    const result = await db
-      .insert(usersTable)
-      .values({
-        email: request.email,
-        firstname: request.firstname,
-        lastname: request.lastname,
-        phone: request.phone,
-        password: hashedPassword,
-        birthdate: request.birthdate ? new Date(request.birthdate) : null,
-        created_at: new Date(),
-        modified_at: new Date(),
-      } as any)
-      .returning(usersTable.id as any);
+  // Create the new user
+  const newUser = await userRepository.add({
+    email: request.email,
+    firstname: request.firstname,
+    lastname: request.lastname,
+    phone: request.phone,
+    password: hashedPassword,
+    birthdate: request.birthdate ? new Date(request.birthdate) : null,
+    created_at: new Date(),
+    modified_at: new Date(),
+  });
 
-    return result[0].id as number;
-  } catch (error) {
-    throw new Error(error as string); // TODO: Implement custom exception
+  // Check if the user has been added to the database
+  if (!newUser) {
+    throw new UserCreationError();
   }
+
+  // Return the id of the new user
+  // TODO: Return a JWT instead
+  return newUser.id;
 };
 
 export const logIn = async (request: LogInRequest): Promise<boolean> => {
-  try {
-    const result = await db
-      .select({ hashedPassword: usersTable.password })
-      .from(usersTable)
-      .where(eq(usersTable.email, request.email));
+  // Get the user
+  const user = await userRepository.findByEmail(request.email);
 
-    if (!result || result.length === 0) {
-      return false;
-    }
+  // User not found
+  if (!user) return false;
 
-    if (!result[0].hashedPassword) {
-      return false;
-    }
-
-    return await bcrypt.compare(request.password, result[0].hashedPassword);
-  } catch (error) {
-    throw new Error(error as string); // TODO: Implement custom exception
-  }
+  // Compare the password with the hashed password
+  return await bcrypt.compare(request.password, user.password);
 };
