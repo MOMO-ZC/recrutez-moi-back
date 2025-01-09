@@ -1,5 +1,5 @@
 import { register, logIn } from "./UserController";
-import { LogInRequest, RegisterRequest } from "../requests/UserRequests";
+import { LogInRequest, RegisterRequest } from "../formats/UserRequests";
 import UserRepository from "../db/repositories/UserRepository";
 import bcrypt from "bcrypt";
 import { UserCreationError } from "../exceptions/UserExceptions";

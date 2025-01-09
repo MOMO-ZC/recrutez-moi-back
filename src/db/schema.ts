@@ -12,7 +12,7 @@ export const entreprisesTable = pgTable("entreprises", {
 /* USERS */
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  email: varchar({ length: 255 }).notNull(),
+  email: varchar({ length: 255 }).notNull().unique(),
   firstname: varchar({ length: 255 }).notNull(),
   lastname: varchar({ length: 255 }).notNull(),
   phone: varchar({ length: 255 }),

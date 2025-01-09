@@ -1,13 +1,16 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
-import { LogInRequest, RegisterRequest } from "../requests/UserRequests";
+import { LogInRequest, RegisterRequest } from "../formats/UserRequests";
 import UserRepository from "../db/repositories/UserRepository";
 import { UserCreationError } from "../exceptions/UserExceptions";
 import { TokenProvider } from "../providers/TokenProvider";
+import { LogInResponse, RegisterResponse } from "../formats/UserResponses";
 
 const userRepository = new UserRepository();
 
-export const register = async (request: RegisterRequest): Promise<string> => {
+export const register = async (
+  request: RegisterRequest
+): Promise<RegisterResponse> => {
   // Hash the password
   const hashedPassword = await bcrypt.hash(request.password, 10);
 
@@ -32,10 +35,13 @@ export const register = async (request: RegisterRequest): Promise<string> => {
   const tokenProvider = new TokenProvider();
   const token = tokenProvider.sign({ id: newUser.id, role: undefined }); // TODO: Add roles later...
 
-  return token;
+  const response: RegisterResponse = { token: token };
+  return response;
 };
 
-export const logIn = async (request: LogInRequest): Promise<string | null> => {
+export const logIn = async (
+  request: LogInRequest
+): Promise<LogInResponse | null> => {
   // Get the user
   const user = await userRepository.findByEmail(request.email);
 
@@ -49,5 +55,7 @@ export const logIn = async (request: LogInRequest): Promise<string | null> => {
 
   const tokenProvider = new TokenProvider();
   const token = tokenProvider.sign({ id: user.id, role: undefined }); // TODO: Add roles later...
-  return token;
+
+  const response: LogInResponse = { token: token };
+  return response;
 };
