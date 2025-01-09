@@ -6,6 +6,11 @@ import { UserCreationError } from "../exceptions/UserExceptions";
 
 jest.mock("../db/repositories/UserRepository");
 jest.mock("bcrypt");
+jest.mock("../providers/TokenProvider", () => ({
+  TokenProvider: jest.fn().mockImplementation(() => ({
+    sign: jest.fn().mockReturnValue("mock-token"),
+  })),
+}));
 
 const mockUserRepository = UserRepository as jest.Mocked<typeof UserRepository>;
 const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
@@ -16,7 +21,7 @@ describe("UserController", () => {
   });
 
   describe("register", () => {
-    it("should register a new user and return the user id", async () => {
+    it("should register a new user and return the user token", async () => {
       const request: RegisterRequest = {
         email: "test@example.com",
         firstname: "John",
@@ -57,7 +62,7 @@ describe("UserController", () => {
         created_at: expect.any(Date),
         modified_at: expect.any(Date),
       });
-      expect(result).toBe(newUser.id);
+      expect(result).toBe("mock-token");
     });
 
     it("should throw UserCreationError if user creation fails", async () => {
@@ -78,7 +83,7 @@ describe("UserController", () => {
   });
 
   describe("logIn", () => {
-    it("should return true if the user is authenticated", async () => {
+    it("should return the user token if the credentials are valid", async () => {
       const request: LogInRequest = {
         email: "test@example.com",
         password: "password123",
@@ -103,10 +108,10 @@ describe("UserController", () => {
         request.password,
         user.password
       );
-      expect(result).toBe(true);
+      expect(result).toBe("mock-token");
     });
 
-    it("should return false if the user is not found", async () => {
+    it("should return null if the user is not found", async () => {
       const request: LogInRequest = {
         email: "test@example.com",
         password: "password123",
@@ -121,10 +126,10 @@ describe("UserController", () => {
       expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
         request.email
       );
-      expect(result).toBe(false);
+      expect(result).toBe(null);
     });
 
-    it("should return false if the password does not match", async () => {
+    it("should return null if the password does not match", async () => {
       const request: LogInRequest = {
         email: "test@example.com",
         password: "password123",
@@ -149,7 +154,7 @@ describe("UserController", () => {
         request.password,
         user.password
       );
-      expect(result).toBe(false);
+      expect(result).toBe(null);
     });
   });
 });
