@@ -62,6 +62,7 @@ export const skillsTable = pgTable("skills", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }),
   type: varchar({ length: 255 }).notNull(), // soft, hard
+  category: varchar({ length: 255 }).notNull(), // programming language, tool, ...
   created_at: date().notNull(),
   modified_at: date().notNull(),
 });
