@@ -11,6 +11,12 @@ const userRepository = new UserRepository();
 export const register = async (
   request: RegisterRequest
 ): Promise<RegisterResponse> => {
+  // Check if a user already uses the email address
+  const existingUser = await userRepository.findByEmail(request.email);
+  if (existingUser) {
+    throw new UserCreationError("Email already in use");
+  }
+
   // Hash the password
   const hashedPassword = await bcrypt.hash(request.password, 10);
 
