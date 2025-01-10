@@ -1,10 +1,15 @@
-import { pgTable, varchar, date, integer } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  varchar,
+  date,
+  integer,
+  primaryKey,
+} from "drizzle-orm/pg-core";
 
-/* ENTREPRISES */
-export const entreprisesTable = pgTable("entreprises", {
+/* COMPANIES */
+export const companiesTable = pgTable("companies", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  following_user_id: integer(),
-  followed_user_id: integer(),
+  name: varchar({ length: 255 }).notNull(),
   created_at: date().notNull(),
   modified_at: date().notNull(),
 });
@@ -17,37 +22,76 @@ export const usersTable = pgTable("users", {
   lastname: varchar({ length: 255 }).notNull(),
   phone: varchar({ length: 255 }),
   password: varchar({ length: 255 }).notNull(),
-  birthdate: date({ mode: "date" }),
+  address: varchar({ length: 255 }),
+  birthdate: date({ mode: "date" }).notNull(),
   created_at: date({ mode: "date" }).notNull(),
   modified_at: date({ mode: "date" }).notNull(),
+});
+
+/* HOBBIES */
+export const hobbiesTable = pgTable("hobbies", {
+  name: varchar({ length: 255 }).primaryKey(),
+});
+
+/* USER_HOBBIES */
+export const userHobbiesTable = pgTable(
+  "user_hobbies",
+  {
+    id_user: integer().references(() => usersTable.id),
+    id_hobby: varchar({ length: 255 }).references(() => hobbiesTable.name),
+  },
+  (table) => {
+    return [
+      {
+        pk: primaryKey({ columns: [table.id_user, table.id_hobby] }),
+      },
+    ];
+  }
+);
+
+/* LINKS */
+export const linksTable = pgTable("links", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  id_user: integer().references(() => usersTable.id),
+  name: varchar({ length: 255 }),
+  url: varchar({ length: 255 }),
 });
 
 /* SKILLS */
 export const skillsTable = pgTable("skills", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }),
+  type: varchar({ length: 255 }).notNull(), // soft, hard
   created_at: date().notNull(),
   modified_at: date().notNull(),
 });
 
-/* PROJETS */
-export const projetsTable = pgTable("projets", {
+/* PROJECT TYPES */
+export const projectTypesTable = pgTable("project_types", {
+  name: varchar({ length: 255 }).primaryKey(),
+});
+
+/* PROJETCS */
+export const projectsTable = pgTable("projects", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_user: integer()
     .notNull()
     .references(() => usersTable.id),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 2500 }).notNull(),
+  type: varchar({ length: 255 })
+    .notNull()
+    .references(() => projectTypesTable.name),
   created_at: date().notNull(),
   modified_at: date().notNull(),
 });
 
-/* PROJETS_SKILLS */
-export const projetsSkillsTable = pgTable("projets_skills", {
+/* PROJECTS_SKILLS */
+export const projectsSkillsTable = pgTable("projects_skills", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_projet: integer()
     .notNull()
-    .references(() => projetsTable.id),
+    .references(() => projectsTable.id),
   id_skill: integer()
     .notNull()
     .references(() => skillsTable.id),
@@ -55,13 +99,13 @@ export const projetsSkillsTable = pgTable("projets_skills", {
   modified_at: date().notNull(),
 });
 
-/* FORMATIONS */
-export const formationsTable = pgTable("formations", {
+/* EDUCATION */
+export const educationTable = pgTable("education", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_user: integer().references(() => usersTable.id),
   school: varchar({ length: 255 }),
-  domain: varchar({ length: 255 }),
-  diploma: varchar({ length: 255 }),
+  domain: varchar({ length: 255 }).notNull(),
+  diploma: varchar({ length: 255 }).notNull(),
   start: date(),
   end: date(),
   created_at: date().notNull(),
@@ -80,8 +124,8 @@ export const experiencesTable = pgTable("experiences", {
   modified_at: date().notNull(),
 });
 
-/* EXPERIENCES_SKILLS */
-export const experiencesSkillsTable = pgTable("experiences_skills", {
+/* EXPERIENCE_SKILLS */
+export const experienceSkillsTable = pgTable("experience_skills", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_experience: integer().references(() => experiencesTable.id),
   id_skill: integer().references(() => skillsTable.id),
@@ -92,18 +136,18 @@ export const experiencesSkillsTable = pgTable("experiences_skills", {
 /* JOB_OFFERS */
 export const jobOffersTable = pgTable("job_offers", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  id_entreprise: integer().references(() => entreprisesTable.id),
+  id_entreprise: integer().references(() => companiesTable.id),
   title: varchar({ length: 255 }),
   body: varchar({ length: 10000 }),
   salary: integer(),
-  remote: varchar({ length: 255 }),
+  address: varchar({ length: 255 }),
   status: varchar({ length: 255 }),
   created_at: date().notNull(),
   modified_at: date().notNull(),
 });
 
-/* JOB_OFFERS_SKILLS */
-export const jobOffersSkillsTable = pgTable("job_offers_skills", {
+/* JOB_OFFER_SKILLS */
+export const jobOfferSkillsTable = pgTable("job_offer_skills", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_skill: integer().references(() => skillsTable.id),
   id_job_offer: integer().references(() => jobOffersTable.id),
@@ -111,21 +155,49 @@ export const jobOffersSkillsTable = pgTable("job_offers_skills", {
   modified_at: date().notNull(),
 });
 
+/* JOB_OFFER_EDUCATION */
+export const jobOfferEducationTable = pgTable(
+  "job_offer_education",
+  {
+    id_education: integer().references(() => educationTable.id),
+    id_job_offer: integer().references(() => jobOffersTable.id),
+  },
+  (table) => {
+    return [
+      {
+        pk: primaryKey({ columns: [table.id_education, table.id_job_offer] }),
+      },
+    ];
+  }
+);
+
+/* JOB_OFFER_EXPERIENCES */
+export const jobOfferExperiencesTable = pgTable(
+  "job_offer_experiences",
+  {
+    id_experience: integer().references(() => experiencesTable.id),
+    id_job_offer: integer().references(() => jobOffersTable.id),
+  },
+  (table) => {
+    return [
+      {
+        pk: primaryKey({ columns: [table.id_experience, table.id_job_offer] }),
+      },
+    ];
+  }
+);
+
 /* LANGUAGES */
 export const languagesTable = pgTable("languages", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }),
-  created_at: date().notNull(),
-  modified_at: date().notNull(),
 });
 
-/* JOB_OFFERS_LANGUAGES */
-export const jobOffersLanguagesTable = pgTable("job_offers_languages", {
+/* JOB_OFFER_LANGUAGES */
+export const jobOfferLanguagesTable = pgTable("job_offer_languages", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_language: integer().references(() => languagesTable.id),
   id_job_offer: integer().references(() => jobOffersTable.id),
-  created_at: date().notNull(),
-  modified_at: date().notNull(),
 });
 
 /* USERS_LANGUAGES */
@@ -134,23 +206,13 @@ export const usersLanguagesTable = pgTable("users_languages", {
   id_language: integer().references(() => languagesTable.id),
   id_user: integer().references(() => usersTable.id),
   created_at: date().notNull(),
-  modified_at: date().notNull(),
 });
 
-/* FAVORIS */
-export const favorisTable = pgTable("favoris", {
+/* JOB APPLICATIONS */
+export const applicationsTable = pgTable("applications", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   id_user: integer().references(() => usersTable.id),
   id_job_offer: integer().references(() => jobOffersTable.id),
-  created_at: date().notNull(),
-  modified_at: date().notNull(),
-});
-
-/* POSTULATIONS */
-export const postulationsTable = pgTable("postulations", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  id_user: integer().references(() => usersTable.id),
-  id_post: integer().references(() => jobOffersTable.id),
   status: varchar({ length: 255 }),
   created_at: date().notNull(),
   modified_at: date().notNull(),
