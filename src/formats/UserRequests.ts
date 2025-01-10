@@ -18,3 +18,14 @@ export interface LogInRequest {
   email: string;
   password: string;
 }
+
+export interface EditUserRequest {
+  id: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
+  phone?: string;
+  password?: string;
+  address?: string;
+  birthdate?: Date | string;
+}
