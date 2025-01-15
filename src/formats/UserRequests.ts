@@ -20,7 +20,7 @@ export interface LogInRequest {
 }
 
 export interface EditUserRequest {
-  id: string;
+  id: number;
   email?: string;
   firstname?: string;
   lastname?: string;

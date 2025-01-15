@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { editUser } from "../controllers/UserController";
+import { UserNotFoundError } from "../exceptions/UserExceptions";
+import { ErrorResponse } from "../formats/ErrorResponse";
 
 const router = Router();
 
@@ -13,9 +15,18 @@ router.put("/:id", async (request, response) => {
 
     await editUser({ id, ...request.body });
 
-    response.status(200).send("User updated");
+    response.status(200).send();
   } catch (error) {
-    response.status(500).send("Internal server error: " + error);
+    if (error instanceof UserNotFoundError) {
+      response
+        .status(404)
+        .json(new ErrorResponse(error.message, error, error.stack));
+    } else {
+      response
+        .status(500)
+        .json(new ErrorResponse("Internal server error", error));
+    }
+    return;
   }
 });
 

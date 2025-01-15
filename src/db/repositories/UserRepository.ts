@@ -27,4 +27,12 @@ export default class UserRepository implements IUserRepository {
     await db.delete(usersTable).where(eq(usersTable.id, id));
     return null;
   }
+
+  async update(
+    userId: number,
+    fields: Partial<InferInsertModel<typeof usersTable>>
+  ): Promise<null> {
+    await db.update(usersTable).set(fields).where(eq(usersTable.id, userId));
+    return null;
+  }
 }

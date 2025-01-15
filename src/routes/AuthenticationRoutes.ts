@@ -1,5 +1,6 @@
 import {Router, Request, Response} from "express";
 import {logIn} from "../controllers/AuthenticationController";
+import {ErrorResponse} from "../formats/ErrorResponse";
 
 const router = Router();
 
@@ -10,14 +11,19 @@ router.post("/login", async (request: Request, response: Response) => {
     return;
   }
 
-  const controllerResponse = await logIn(request.body);
-  if (!controllerResponse) {
-    response.status(401).send("Invalid credentials");
-    return;
-  }
+  try {
+    const controllerResponse = await logIn(request.body);
+    if (!controllerResponse) {
+      response.status(401).send("Invalid credentials");
+      return;
+    }
 
-  response.json(controllerResponse);
-  return;
+    response.json(controllerResponse);
+  } catch (error) {
+    response
+      .status(500)
+      .json(new ErrorResponse("Internal server error", error));
+  }
 });
 
 export default router;
