@@ -23,4 +23,9 @@ export default class UserRepository implements IUserRepository {
   async findById(id: number): Promise<User | null> {
     return (await db.select().from(usersTable).where(eq(usersTable.id, id)))[0];
   }
+
+  async remove(id: number): Promise<null> {
+    await db.delete(usersTable).where(eq(usersTable.id, id));
+    return null;
+  }
 }

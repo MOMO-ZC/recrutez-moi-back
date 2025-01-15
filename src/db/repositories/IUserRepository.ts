@@ -25,4 +25,10 @@ export interface IUserRepository {
    * @param id The ID of the user to find
    */
   findById(id: number): Promise<User | null>;
+
+  /**
+   * Remove a user from the database.
+   * @param id The ID of the user to remove
+   */
+  remove(id: number): Promise<null>;
 }
