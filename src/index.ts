@@ -16,7 +16,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/auth", AuthenticationRoutes);
 
 app.use("/candidates", CandidateRoutes);
-app.use("/companies", CandidateRoutes);
+app.use("/companies", CompanyRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

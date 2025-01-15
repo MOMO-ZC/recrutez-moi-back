@@ -6,9 +6,9 @@ import {
   RegisterCompanyRequest,
 } from "../formats/UserRequests";
 import UserRepository from "../db/repositories/UserRepository";
-import { UserCreationError } from "../exceptions/UserExceptions";
-import { TokenProvider } from "../providers/TokenProvider";
-import { LogInResponse, RegisterResponse } from "../formats/UserResponses";
+import {UserCreationError} from "../exceptions/UserExceptions";
+import {TokenProvider} from "../providers/TokenProvider";
+import {LogInResponse, RegisterResponse} from "../formats/UserResponses";
 import CandidateRepository from "../db/repositories/CandidateRepository";
 import CompanyRepository from "../db/repositories/CompanyRepository";
 
@@ -65,9 +65,9 @@ export const registerCandidate = async (
 
   // Return a user token to keep them logged in
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: newUser.id, role: undefined }); // TODO: Add roles later...
+  const token = tokenProvider.sign({id: newUser.id, role: undefined}); // TODO: Add roles later...
 
-  const response: RegisterResponse = { token: token };
+  const response: RegisterResponse = {token: token};
   return response;
 };
 
@@ -84,13 +84,21 @@ export const registerCompany = async (
   const hashedPassword = await bcrypt.hash(request.password, 10);
 
   // Create the new authentication user
-  const newUser = await userRepository.add({
+  let newUserData: {
+    email: string;
+    password: string;
+    role: "candidate" | "company";
+    created_at: Date;
+    modified_at: Date;
+  } = {
     email: request.email,
     password: hashedPassword,
     role: "company",
     created_at: new Date(),
     modified_at: new Date(),
-  });
+  };
+
+  const newUser = await userRepository.add(newUserData);
 
   // Check if the user has been added to the database
   if (!newUser) {
@@ -114,9 +122,9 @@ export const registerCompany = async (
 
   // Return a user token to keep them logged in
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: newUser.id, role: undefined }); // TODO: Add roles later...
+  const token = tokenProvider.sign({id: newUser.id, role: undefined}); // TODO: Add roles later...
 
-  const response: RegisterResponse = { token: token };
+  const response: RegisterResponse = {token: token};
   return response;
 };
 
@@ -137,8 +145,8 @@ export const logIn = async (
   // TODO: Get the corresponding candidate or company user and include their relevant info in the token
 
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: user.id, role: undefined }); // TODO: Add roles later...
+  const token = tokenProvider.sign({id: user.id, role: undefined}); // TODO: Add roles later...
 
-  const response: LogInResponse = { token: token };
+  const response: LogInResponse = {token: token};
   return response;
 };
