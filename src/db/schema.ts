@@ -4,6 +4,7 @@ import {
   date,
   integer,
   primaryKey,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 /* COMPANIES */
@@ -14,18 +15,37 @@ export const companiesTable = pgTable("companies", {
   modified_at: date().notNull(),
 });
 
+export const roleEnum = pgEnum("role", ["candidate", "company"]);
+
 /* USERS */
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   email: varchar({ length: 255 }).notNull().unique(),
+  password: varchar({ length: 255 }).notNull(),
+  role: roleEnum().notNull(),
+  created_at: date({ mode: "date" }).notNull(),
+  modified_at: date({ mode: "date" }).notNull(),
+});
+
+/* COMPANY USER */
+export const companyUsersTable = pgTable("company_users", {
+  user: integer()
+    .primaryKey()
+    .references(() => usersTable.id),
+  name: varchar({ length: 255 }).notNull(),
+  company: integer().references(() => companiesTable.id),
+});
+
+/* CANDIDATE USER */
+export const candidateUsersTable = pgTable("candidate_users", {
+  user: integer()
+    .primaryKey()
+    .references(() => usersTable.id),
   firstname: varchar({ length: 255 }).notNull(),
   lastname: varchar({ length: 255 }).notNull(),
   phone: varchar({ length: 255 }),
-  password: varchar({ length: 255 }).notNull(),
   address: varchar({ length: 255 }),
   birthdate: date({ mode: "date" }).notNull(),
-  created_at: date({ mode: "date" }).notNull(),
-  modified_at: date({ mode: "date" }).notNull(),
 });
 
 /* HOBBIES */

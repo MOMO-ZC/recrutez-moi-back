@@ -1,10 +1,17 @@
-export interface RegisterRequest {
+export interface RegisterCandidateRequest {
   email: string;
   firstname: string;
   lastname: string;
   phone?: string;
   password: string;
-  birthdate?: Date | string;
+  birthdate: Date | string;
+  address?: string;
+}
+
+export interface RegisterCompanyRequest {
+  email: string;
+  name: string;
+  password: string;
 }
 
 export interface LogInRequest {

@@ -1,8 +1,12 @@
 import { Router, Request, Response } from "express";
-import { logIn, register } from "../controllers/UserController";
+import {
+  logIn,
+  registerCandidate,
+} from "../controllers/AuthenticationController";
 
 const router = Router();
 
+// Move to Candidate routes and add Company routes too
 router.post("/register", async (request: Request, response: Response) => {
   // Check if the request body is valid and can be cast to a RegisterRequest
   if (
@@ -15,7 +19,7 @@ router.post("/register", async (request: Request, response: Response) => {
     return;
   }
 
-  const controllerResponse = await register(request.body);
+  const controllerResponse = await registerCandidate(request.body);
   if (!controllerResponse) {
     response.status(401).send("Invalid credentials");
     return;
