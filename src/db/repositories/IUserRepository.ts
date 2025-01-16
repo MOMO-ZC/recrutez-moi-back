@@ -31,13 +31,4 @@ export interface IUserRepository {
    * @param id The ID of the user to remove
    */
   remove(id: number): Promise<null>;
-
-  /**
-   * Updates fields for a user in the database.
-   * @param fields The user fields to update
-   */
-  update(
-    userId: number,
-    fields: Partial<InferInsertModel<typeof usersTable>>
-  ): Promise<null>;
 }

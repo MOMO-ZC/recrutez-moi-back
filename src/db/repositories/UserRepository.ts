@@ -1,7 +1,7 @@
-import {IUserRepository} from "./IUserRepository";
-import {db} from "../";
-import {usersTable} from "../schema";
-import {InferInsertModel, InferSelectModel, eq} from "drizzle-orm";
+import { IUserRepository } from "./IUserRepository";
+import { db } from "../";
+import { usersTable } from "../schema";
+import { InferInsertModel, InferSelectModel, eq } from "drizzle-orm";
 
 type User = InferSelectModel<typeof usersTable>;
 
@@ -15,7 +15,10 @@ export default class UserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await db.select().from(usersTable).where(eq(usersTable.email, email))
+    const user = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email));
     return user[0];
   }
 
@@ -25,14 +28,6 @@ export default class UserRepository implements IUserRepository {
 
   async remove(id: number): Promise<null> {
     await db.delete(usersTable).where(eq(usersTable.id, id));
-    return null;
-  }
-
-  async update(
-    userId: number,
-    fields: Partial<InferInsertModel<typeof usersTable>>
-  ): Promise<null> {
-    await db.update(usersTable).set(fields).where(eq(usersTable.id, userId));
     return null;
   }
 }
