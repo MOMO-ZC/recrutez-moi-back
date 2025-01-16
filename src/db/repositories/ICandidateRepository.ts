@@ -60,7 +60,7 @@ export default interface ICandidateRepository {
         Partial<
           Omit<
             InferSelectModel<typeof usersTable>,
-            "id" | "created_at" | "modified_at"
+            "id" | "created_at" | "modified_at" | "role"
           >
         >
     >;

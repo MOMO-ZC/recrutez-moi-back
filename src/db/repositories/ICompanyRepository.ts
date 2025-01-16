@@ -54,7 +54,7 @@ export default interface ICompanyRepository {
         Partial<
           Omit<
             InferSelectModel<typeof usersTable>,
-            "id" | "created_at" | "modified_at"
+            "id" | "created_at" | "modified_at" | "role"
           >
         >
     >;
