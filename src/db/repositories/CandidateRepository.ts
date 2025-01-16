@@ -47,10 +47,19 @@ export default class CandidateRepository implements ICandidateRepository {
     user: number;
     candidate: Partial<Omit<Candidate, "user">>;
   }): Promise<null> {
-    await db
-      .update(candidateUsersTable)
-      .set(candidate)
-      .where(eq(candidateUsersTable.user, user));
+    await db.transaction(async (tx) => {
+      // Update the modified_at date in the users table
+      await tx
+        .update(usersTable)
+        .set({ modified_at: new Date() })
+        .where(eq(usersTable.id, user));
+
+      // Update candidate_users table
+      await tx
+        .update(candidateUsersTable)
+        .set(candidate)
+        .where(eq(candidateUsersTable.user, user));
+    });
     return null;
   }
 

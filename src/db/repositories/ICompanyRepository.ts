@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { companyUsersTable } from "../schema";
+import { companyUsersTable, usersTable } from "../schema";
 
 type Company = InferSelectModel<typeof companyUsersTable>;
 type CompanyInsert = InferInsertModel<typeof companyUsersTable>;
@@ -25,4 +25,38 @@ export default interface ICompanyRepository {
    * @param id The ID of the company to remove
    */
   remove(id: number): Promise<null>;
+
+  /**
+   * Update a company in the database.
+   * @param user The ID of the user associated with the company
+   * @param company The fields to update on the company
+   */
+  update({
+    user,
+    company,
+  }: {
+    user: number;
+    company: Partial<Omit<Company, "user">>;
+  }): Promise<null>;
+
+  /**
+   * Update a company and its associated user in the database.
+   * @param id The ID of the company to update
+   * @param fullUser The full user object to update with
+   */
+  updateWithUser({
+    id,
+    fullUser,
+  }: {
+    id: number;
+    fullUser: Partial<
+      Omit<Company, "user"> &
+        Partial<
+          Omit<
+            InferSelectModel<typeof usersTable>,
+            "id" | "created_at" | "modified_at"
+          >
+        >
+    >;
+  }): Promise<null>;
 }
