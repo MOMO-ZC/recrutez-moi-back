@@ -1,7 +1,7 @@
-import {IUserRepository} from "./IUserRepository";
-import {db} from "../";
-import {usersTable} from "../schema";
-import {InferInsertModel, InferSelectModel, eq} from "drizzle-orm";
+import { IUserRepository } from "./IUserRepository";
+import { db } from "../";
+import { usersTable } from "../schema";
+import { InferInsertModel, InferSelectModel, eq } from "drizzle-orm";
 
 type User = InferSelectModel<typeof usersTable>;
 
@@ -15,7 +15,10 @@ export default class UserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await db.select().from(usersTable).where(eq(usersTable.email, email))
+    const user = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email));
     return user[0];
   }
 
