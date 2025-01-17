@@ -1,0 +1,32 @@
+name: Build, publish and deploy image to server using GHCR.
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  build_and_publish:
+    name: Build and publish Docker image to GHCR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and push the image
+        run: |
+          docker login ghcr.io --username MOMO-ZC --password ${{ secrets.GHCR_TOKEN }}
+          docker build . --tag ghcr.io/MOMO-ZC/${{ vars.PACKAGE_NAME }}:latest 
+          docker push ghcr.io/MOMO-ZC/${{ vars.PACKAGE_NAME }}:latest
+  deploy:
+    needs: build_and_publish
+    name: Deploy image to server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ssh keys
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      - name: connect and pull
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && docker login ghcr.io --username MOMO-ZC --password ${{ secrets.GHCR_TOKEN }} && docker compose pull && docker compose up -d --force-recreate && exit"
+      - name: cleanup
+        run: |
+          rm ~/.ssh/id_rsa
+          rm ~/.ssh/known_hosts
