@@ -157,14 +157,16 @@ export const experienceSkillsTable = pgTable("experience_skills", {
 /* JOB_OFFERS */
 export const jobOffersTable = pgTable("job_offers", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  id_company: integer().references(() => companiesTable.id),
-  title: varchar({ length: 255 }),
-  body: varchar({ length: 10000 }),
-  salary: integer(),
-  address: varchar({ length: 255 }),
-  status: varchar({ length: 255 }),
-  created_at: date().notNull(),
-  modified_at: date().notNull(),
+  id_company: integer()
+    .references(() => companiesTable.id)
+    .notNull(),
+  title: varchar({ length: 255 }).notNull(),
+  body: varchar({ length: 10000 }).notNull(),
+  salary: integer().notNull(),
+  address: varchar({ length: 255 }).notNull(),
+  status: varchar({ length: 255 }).notNull(),
+  created_at: date().notNull().notNull(),
+  modified_at: date().notNull().notNull(),
 });
 
 /* JOB_OFFER_SKILLS */
