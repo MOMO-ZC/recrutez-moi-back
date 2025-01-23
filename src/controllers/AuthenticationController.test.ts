@@ -207,7 +207,6 @@ describe("AuthenticationController", () => {
         id: 20,
         user: 10,
         name: request.name,
-        company: 1,
       };
 
       (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
@@ -239,160 +238,215 @@ describe("AuthenticationController", () => {
       expect(mockCompanyRepository.prototype.add).toHaveBeenCalledWith({
         user: createdUser.id,
         name: request.name,
-        company: 1,
       });
       expect(result).toEqual({ token: "mock-token" });
     });
 
-    it("should throw UserCreationError if the user already exists", async () => {
-      // Arrange
-      const request: RegisterCompanyRequest = {
-        email: "company@example.com",
-        password: "password123",
-        name: "My Company",
-      };
-      (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
-        { id: 99 }
-      );
-
-      // Act & Assert
-      await expect(registerCompany(request)).rejects.toThrow(
-        "Email already in use"
-      );
-    });
-
-    it("should throw UserCreationError if user creation fails", async () => {
-      // Arrange
-      const request: RegisterCompanyRequest = {
-        email: "company@example.com",
-        password: "password123",
-        name: "My Company",
-      };
-      (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
-        null
-      );
-      (mockBcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword123");
-      (mockUserRepository.prototype.add as jest.Mock).mockResolvedValue(null);
-
-      // Act & Assert
-      await expect(registerCompany(request)).rejects.toThrow(UserCreationError);
-    });
-
-    it("should remove the user if company creation fails", async () => {
-      // Arrange
-      const request: RegisterCompanyRequest = {
-        email: "company@example.com",
-        password: "password123",
-        name: "My Company",
-      };
-      const createdUser = {
-        id: 10,
-        email: request.email,
-        password: "hashedPassword123",
-        role: "company",
-        created_at: new Date(),
-        modified_at: new Date(),
-      };
-
-      (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
-        null
-      );
-      (mockBcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword123");
-      (mockUserRepository.prototype.add as jest.Mock).mockResolvedValue(
-        createdUser
-      );
-      (mockCompanyRepository.prototype.add as jest.Mock).mockResolvedValue(
-        null
-      );
-
-      // Act & Assert
-      await expect(registerCompany(request)).rejects.toThrow(UserCreationError);
-      expect(mockUserRepository.prototype.remove).toHaveBeenCalledWith(10);
-    });
+    // Other test cases...
   });
 
-  describe("logIn", () => {
-    it("should return the user token if credentials are valid", async () => {
-      // Arrange
-      const request: LogInRequest = {
-        email: "test@example.com",
-        password: "password123",
-      };
-      const user = {
-        id: 1,
-        email: "test@example.com",
-        password: "hashedPassword123",
-      };
-
-      (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
-        user
-      );
-      (mockBcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-      // Act
-      const result = await logIn(request);
-
-      // Assert
-      expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
-        request.email
-      );
-      expect(mockBcrypt.compare).toHaveBeenCalledWith(
-        request.password,
-        user.password
-      );
-      expect(result).toEqual({ token: "mock-token" });
+  it("should throw UserCreationError if the user already exists", async () => {
+    // Arrange
+    const request: RegisterCompanyRequest = {
+      email: "company@example.com",
+      password: "password123",
+      name: "My Company",
+    };
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue({
+      id: 99,
     });
 
-    it("should return null if the user is not found", async () => {
-      // Arrange
-      const request: LogInRequest = {
-        email: "test@example.com",
-        password: "password123",
-      };
+    // Act & Assert
+    await expect(registerCompany(request)).rejects.toThrow(
+      "Email already in use"
+    );
+  });
 
-      (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
-        null
-      );
+  it("should throw UserCreationError if user creation fails", async () => {
+    // Arrange
+    const request: RegisterCompanyRequest = {
+      email: "company@example.com",
+      password: "password123",
+      name: "My Company",
+    };
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      null
+    );
+    (mockBcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword123");
+    (mockUserRepository.prototype.add as jest.Mock).mockResolvedValue(null);
 
-      // Act
-      const result = await logIn(request);
+    // Act & Assert
+    await expect(registerCompany(request)).rejects.toThrow(UserCreationError);
+  });
 
-      // Assert
-      expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
-        request.email
-      );
-      expect(result).toBe(null);
+  it("should remove the user if company creation fails", async () => {
+    // Arrange
+    const request: RegisterCompanyRequest = {
+      email: "company@example.com",
+      password: "password123",
+      name: "My Company",
+    };
+    const createdUser = {
+      id: 10,
+      email: request.email,
+      password: "hashedPassword123",
+      role: "company",
+      created_at: new Date(),
+      modified_at: new Date(),
+    };
+
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      null
+    );
+    (mockBcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword123");
+    (mockUserRepository.prototype.add as jest.Mock).mockResolvedValue(
+      createdUser
+    );
+    (mockCompanyRepository.prototype.add as jest.Mock).mockResolvedValue(null);
+
+    // Act & Assert
+    await expect(registerCompany(request)).rejects.toThrow(UserCreationError);
+    expect(mockUserRepository.prototype.remove).toHaveBeenCalledWith(10);
+  });
+
+  it("should create a corresponding company profile", async () => {
+    // Arrange
+    const request: RegisterCompanyRequest = {
+      email: "company@example.com",
+      password: "password123",
+      name: "My Company",
+    };
+    const hashedPassword = "hashedPassword123";
+    const createdUser = {
+      id: 10,
+      email: request.email,
+      password: hashedPassword,
+      role: "company",
+      created_at: new Date(),
+      modified_at: new Date(),
+    };
+    const createdCompany = {
+      id: 20,
+      user: 10,
+      name: request.name,
+    };
+
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      null
+    );
+    (mockBcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+    (mockUserRepository.prototype.add as jest.Mock).mockResolvedValue(
+      createdUser
+    );
+    (mockCompanyRepository.prototype.add as jest.Mock).mockResolvedValue(
+      createdCompany
+    );
+
+    // Act
+    const result = await registerCompany(request);
+
+    // Assert
+    expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
+      request.email
+    );
+    expect(mockBcrypt.hash).toHaveBeenCalledWith(request.password, 10);
+    expect(mockUserRepository.prototype.add).toHaveBeenCalledWith({
+      email: request.email,
+      password: hashedPassword,
+      role: "company",
+      created_at: expect.any(Date),
+      modified_at: expect.any(Date),
     });
-
-    it("should return null if the password does not match", async () => {
-      // Arrange
-      const request: LogInRequest = {
-        email: "test@example.com",
-        password: "password123",
-      };
-      const user = {
-        id: 1,
-        email: "test@example.com",
-        password: "hashedPassword123",
-      };
-
-      (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
-        user
-      );
-      (mockBcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-      // Act
-      const result = await logIn(request);
-
-      // Assert
-      expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
-        request.email
-      );
-      expect(mockBcrypt.compare).toHaveBeenCalledWith(
-        request.password,
-        user.password
-      );
-      expect(result).toBe(null);
+    expect(mockCompanyRepository.prototype.add).toHaveBeenCalledWith({
+      user: createdUser.id,
+      name: request.name,
     });
+    expect(result).toEqual({ token: "mock-token" });
   });
 });
+
+describe("logIn", () => {
+  it("should return the user token if credentials are valid", async () => {
+    // Arrange
+    const request: LogInRequest = {
+      email: "test@example.com",
+      password: "password123",
+    };
+    const user = {
+      id: 1,
+      email: "test@example.com",
+      password: "hashedPassword123",
+    };
+
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      user
+    );
+    (mockBcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+    // Act
+    const result = await logIn(request);
+
+    // Assert
+    expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
+      request.email
+    );
+    expect(mockBcrypt.compare).toHaveBeenCalledWith(
+      request.password,
+      user.password
+    );
+    expect(result).toEqual({ token: "mock-token" });
+  });
+
+  it("should return null if the user is not found", async () => {
+    // Arrange
+    const request: LogInRequest = {
+      email: "test@example.com",
+      password: "password123",
+    };
+
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      null
+    );
+
+    // Act
+    const result = await logIn(request);
+
+    // Assert
+    expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
+      request.email
+    );
+    expect(result).toBe(null);
+  });
+
+  it("should return null if the password does not match", async () => {
+    // Arrange
+    const request: LogInRequest = {
+      email: "test@example.com",
+      password: "password123",
+    };
+    const user = {
+      id: 1,
+      email: "test@example.com",
+      password: "hashedPassword123",
+    };
+
+    (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      user
+    );
+    (mockBcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+    // Act
+    const result = await logIn(request);
+
+    // Assert
+    expect(mockUserRepository.prototype.findByEmail).toHaveBeenCalledWith(
+      request.email
+    );
+    expect(mockBcrypt.compare).toHaveBeenCalledWith(
+      request.password,
+      user.password
+    );
+    expect(result).toBe(null);
+  });
+});
+// });

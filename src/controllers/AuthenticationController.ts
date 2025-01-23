@@ -109,7 +109,6 @@ export const registerCompany = async (
   const newCompany = await companyRepository.add({
     user: newUser.id,
     name: request.name,
-    company: 1, // TODO: CREATE A COMPANY PROFILE BEFORE
   });
 
   // Check if the company has been added to the database
