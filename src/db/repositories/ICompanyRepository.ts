@@ -12,7 +12,7 @@ export default interface ICompanyRepository {
    * Add a company to the database.
    * @param company The company to add to the database
    */
-  add(company: CompanyInsert): Promise<Company | null>;
+  add(company: Omit<CompanyInsert, "company">): Promise<Company | null>;
 
   /**
    * Find a company by their ID.
