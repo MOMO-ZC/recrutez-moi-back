@@ -207,6 +207,7 @@ describe("AuthenticationController", () => {
         id: 20,
         user: 10,
         name: request.name,
+        company: 1,
       };
 
       (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
@@ -238,6 +239,7 @@ describe("AuthenticationController", () => {
       expect(mockCompanyRepository.prototype.add).toHaveBeenCalledWith({
         user: createdUser.id,
         name: request.name,
+        company: 1,
       });
       expect(result).toEqual({ token: "mock-token" });
     });
