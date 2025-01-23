@@ -10,7 +10,17 @@ export interface UpdateOfferResponse
 export interface RemoveOfferResponse {}
 
 export interface GetOfferByIdResponse
-  extends InferSelectModel<typeof jobOffersTable> {}
+  extends InferSelectModel<typeof jobOffersTable> {
+  skills: { id: number; name: string; type: string; category: string }[];
+  education: { id: number; domain: string; diploma: string }[];
+  experiences: { id: number; name: string }[];
+  languages: { id: number; name: string; level: string }[];
+}
 
 export interface GetOffersResponse
-  extends Array<InferSelectModel<typeof jobOffersTable>> {}
+  extends Array<InferSelectModel<typeof jobOffersTable>> {
+  skills: { id: number; name: string; type: string; category: string }[];
+  education: { id: number; domain: string; diploma: string }[];
+  experiences: { id: number; name: string }[];
+  languages: { id: number; name: string; level: string }[];
+}

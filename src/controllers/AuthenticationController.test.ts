@@ -114,6 +114,7 @@ describe("AuthenticationController", () => {
         lastname: "Doe",
         password: "password123",
         birthdate: "2025-01-01",
+        address: "123 Main St",
       };
       (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
         { id: 99 }
@@ -133,6 +134,7 @@ describe("AuthenticationController", () => {
         lastname: "Doe",
         password: "password123",
         birthdate: "2025-01-01",
+        address: "123 Main St",
       };
       (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
         null
@@ -154,6 +156,7 @@ describe("AuthenticationController", () => {
         lastname: "Doe",
         password: "password123",
         birthdate: "2025-01-01",
+        address: "123 Main St",
       };
       const createdUser = {
         id: 1,

@@ -1,4 +1,5 @@
 import OfferRepository from "../db/repositories/OfferRepository";
+import { OfferNotFoundError } from "../exceptions/OfferExceptions";
 import {
   AddOfferRequest,
   GetAllOffersRequest,
@@ -18,13 +19,44 @@ const offerRepository = new OfferRepository();
 export const AddOffer = async (
   request: AddOfferRequest
 ): Promise<AddOfferResponse> => {
-  return await offerRepository.create(request);
+  // Separate the offer from the other tables
+  const requestOffer = {
+    id_company: request.id_company,
+    title: request.title,
+    body: request.body,
+    minSalary: request.minSalary,
+    maxSalary: request.maxSalary,
+    address: request.address,
+    status: request.status ?? "pending",
+    image: request.image,
+  };
+
+  const requestSkills = request.skills;
+  const requestEducation = request.education;
+  const requestExperiences = request.experiences;
+  const requestLanguages = request.languages;
+
+  const offer = await offerRepository.create(requestOffer);
+
+  // Add skills
+  offerRepository.addSkills(offer.id, requestSkills);
+
+  // Add education
+  offerRepository.addEducation(offer.id, requestEducation);
+
+  // Add experiences
+  offerRepository.addExperiences(offer.id, requestExperiences);
+
+  // Add languages
+  offerRepository.addLanguages(offer.id, requestLanguages);
+
+  return offer;
 };
 
 export const UpdateOffer = async (
   request: UpdateOfferRequest
 ): Promise<UpdateOfferResponse> => {
-  return await offerRepository.update(request);
+  return await offerRepository.updateWithLinks(request);
 };
 
 export const RemoveOffer = async (
@@ -37,7 +69,12 @@ export const RemoveOffer = async (
 export const GetOfferById = async (
   request: GetOfferByIdRequest
 ): Promise<GetOfferByIdResponse> => {
-  return await offerRepository.getById(request.id);
+  const offer = await offerRepository.getById(request.id);
+  if (!offer || !offer.id) {
+    throw new OfferNotFoundError();
+  }
+
+  return offer;
 };
 
 export const GetAllOffers = async (

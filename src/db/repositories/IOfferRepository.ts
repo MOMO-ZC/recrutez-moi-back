@@ -30,6 +30,21 @@ export default interface IOfferRepository {
   ): Promise<Offer>;
 
   /**
+   * Updates an existing offer in the repository along with the skills, eduaction, experiences and languages linked to it.
+   * @param offer The offer to update
+   */
+  updateWithLinks(
+    offer: Partial<
+      Omit<Offer, "created_at" | "modified_at"> & {
+        skills: number[];
+        education: number[];
+        experiences: number[];
+        languages: { id: number; level: string }[];
+      }
+    >
+  ): Promise<Offer>;
+
+  /**
    * Deletes an offer from the repository
    * @param id The id of the offer to delete
    */
@@ -40,11 +55,56 @@ export default interface IOfferRepository {
    * @param id The id of the offer to retrieve
    * @returns The corresponding offer
    */
-  getById(id: number): Promise<Offer>;
+  getById(id: number): Promise<
+    Offer & {
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    }
+  >;
 
   /**
    * Retrieves all offers from the repository
    * @returns A list of all offers
    */
-  getAll(): Promise<Offer[]>;
+  getAll(): Promise<
+    (Offer & {
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    })[]
+  >;
+
+  /**
+   * Adds skills to an offer
+   * @param offerId The id of the offer to add skills to
+   * @param skills The ids of the skills to add to the offer
+   */
+  addSkills(offerId: number, skills: number[]): Promise<null>;
+
+  /**
+   * Adds education requirements to an offer
+   * @param offerId The id of the offer to add education requirements to
+   * @param education The ids of the education requirements to add to the offer
+   */
+  addEducation(offerId: number, education: number[]): Promise<null>;
+
+  /**
+   * Adds experiences to an offer
+   * @param offerId The id of the offer to add experiences to
+   * @param experiences The ids of the experiences to add to the offer
+   */
+  addExperiences(offerId: number, experiences: number[]): Promise<null>;
+
+  /**
+   * Adds languages to an offer
+   * @param offerId The id of the offer to add languages to
+   * @param languages The ids of the languages to add to the offer
+   */
+  addLanguages(
+    offerId: number,
+    languages: { id: number; level: string }[]
+  ): Promise<null>;
 }

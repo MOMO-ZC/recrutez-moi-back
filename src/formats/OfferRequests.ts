@@ -2,10 +2,15 @@ export interface AddOfferRequest {
   id_company: number;
   title: string;
   body: string;
-  salary: number;
+  minSalary: number;
+  maxSalary: number;
   address: string;
-  status: string;
-  // TODO: Add skills, education, experiences and languages.
+  status?: string;
+  image: string;
+  skills: number[];
+  education: number[];
+  experiences: number[];
+  languages: { id: number; level: string }[];
 }
 
 export interface UpdateOfferRequest {
@@ -15,6 +20,10 @@ export interface UpdateOfferRequest {
   salary: number | undefined;
   address: string | undefined;
   status: string | undefined;
+  skills: number[] | undefined;
+  education: number[] | undefined;
+  experiences: number[] | undefined;
+  languages: { id: number; level: string }[] | undefined;
 }
 
 export interface RemoveOfferRequest {

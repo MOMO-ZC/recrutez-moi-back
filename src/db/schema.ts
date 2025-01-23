@@ -53,22 +53,17 @@ export const candidateUsersTable = pgTable("candidate_users", {
   lookingForExperience: integer(), // 1: junior, 2: confirmed, 3: senior
 });
 
-/* HOBBIES */
-export const hobbiesTable = pgTable("hobbies", {
-  name: varchar({ length: 255 }).primaryKey(),
-});
-
 /* USER_HOBBIES */
 export const userHobbiesTable = pgTable(
   "user_hobbies",
   {
     id_user: integer().references(() => usersTable.id),
-    id_hobby: varchar({ length: 255 }).references(() => hobbiesTable.name),
+    name: varchar({ length: 255 }).notNull(),
   },
   (table) => {
     return [
       {
-        pk: primaryKey({ columns: [table.id_user, table.id_hobby] }),
+        pk: primaryKey({ columns: [table.id_user, table.name] }),
       },
     ];
   }
@@ -276,7 +271,6 @@ export const jobOfferExperiencesTable = pgTable(
 export const languagesTable = pgTable("languages", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
-  level: integer().notNull(),
 });
 
 /* JOB_OFFER_LANGUAGES */
@@ -285,6 +279,7 @@ export const jobOfferLanguagesTable = pgTable(
   {
     id_language: integer().references(() => languagesTable.id),
     id_job_offer: integer().references(() => jobOffersTable.id),
+    level: varchar({ length: 255 }).notNull(),
   },
   (table) => {
     return [
@@ -301,7 +296,7 @@ export const usersLanguagesTable = pgTable(
   {
     id_language: integer().references(() => languagesTable.id),
     id_user: integer().references(() => usersTable.id),
-    created_at: date().notNull(),
+    level: varchar({ length: 255 }).notNull(),
   },
   (table) => {
     return [

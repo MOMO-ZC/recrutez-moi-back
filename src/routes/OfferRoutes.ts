@@ -7,6 +7,7 @@ import {
   UpdateOffer,
 } from "../controllers/OfferController";
 import { ErrorResponse } from "../formats/ErrorResponse";
+import { OfferNotFoundError } from "../exceptions/OfferExceptions";
 
 const router = Router();
 
@@ -74,13 +75,22 @@ router.get("/:id", async (request, response) => {
     return;
   }
 
-  const controllerResponse = await GetOfferById({ id });
-  if (!controllerResponse) {
-    response.status(404).send("Offer not found.");
+  try {
+    const controllerResponse = await GetOfferById({ id });
+    if (!controllerResponse) {
+      throw new OfferNotFoundError();
+    }
+    response.json(controllerResponse);
+  } catch (error: unknown) {
+    if (error instanceof OfferNotFoundError) {
+      response.status(404).send("Offer not found.");
+    } else {
+      response
+        .status(500)
+        .json(new ErrorResponse("Internal server error", error));
+    }
     return;
   }
-
-  response.json(controllerResponse);
 });
 
 // Get all offers
