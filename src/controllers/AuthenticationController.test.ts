@@ -103,7 +103,7 @@ describe("AuthenticationController", () => {
         birthdate: new Date(request.birthdate),
         address: request.address,
       });
-      expect(result).toEqual({ token: "mock-token" });
+      expect(result).toEqual({ id: 1, role: "candidate", token: "mock-token" });
     });
 
     it("should throw UserCreationError if the user already exists", async () => {
@@ -239,7 +239,7 @@ describe("AuthenticationController", () => {
         user: createdUser.id,
         name: request.name,
       });
-      expect(result).toEqual({ token: "mock-token" });
+      expect(result).toEqual({ id: 10, role: "company", token: "mock-token" });
     });
 
     // Other test cases...
@@ -361,7 +361,7 @@ describe("AuthenticationController", () => {
       user: createdUser.id,
       name: request.name,
     });
-    expect(result).toEqual({ token: "mock-token" });
+    expect(result).toEqual({ id: 10, role: "company", token: "mock-token" });
   });
 });
 
@@ -376,6 +376,7 @@ describe("logIn", () => {
       id: 1,
       email: "test@example.com",
       password: "hashedPassword123",
+      role: "candidate",
     };
 
     (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
@@ -394,7 +395,7 @@ describe("logIn", () => {
       request.password,
       user.password
     );
-    expect(result).toEqual({ token: "mock-token" });
+    expect(result).toEqual({ id: 1, role: "candidate", token: "mock-token" });
   });
 
   it("should return null if the user is not found", async () => {
