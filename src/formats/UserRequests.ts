@@ -5,7 +5,7 @@ export interface RegisterCandidateRequest {
   phone?: string;
   password: string;
   birthdate: Date | string;
-  address?: string;
+  address: string;
 }
 
 export interface RegisterCompanyRequest {
