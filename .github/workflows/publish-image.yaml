@@ -1,23 +1,40 @@
 name: Build, publish and deploy image to server using GHCR.
 
+<<<<<<< HEAD
+on:
+=======
 on: 
+>>>>>>> main
   workflow_dispatch:
 
 jobs:
   build_and_publish:
     name: Build and publish Docker image to GHCR
+<<<<<<< HEAD
+    runs-on: ubuntu-22.04-arm
+=======
     runs-on: ubuntu-latest
+>>>>>>> main
     steps:
       - uses: actions/checkout@v3
       - name: Build and push the image
         run: |
           docker login ghcr.io --username MOMO-ZC --password ${{ secrets.GHCR_TOKEN }}
+<<<<<<< HEAD
+          docker build . --tag ghcr.io/momo-zc/${{ vars.PACKAGE_NAME }}:latest 
+          docker push ghcr.io/momo-zc/${{ vars.PACKAGE_NAME }}:latest
+  deploy:
+    needs: build_and_publish
+    name: Deploy image to server
+    runs-on: ubuntu-22.04-arm
+=======
           docker build . --tag ghcr.io/MOMO-ZC/${{ vars.PACKAGE_NAME }}:latest 
           docker push ghcr.io/MOMO-ZC/${{ vars.PACKAGE_NAME }}:latest
   deploy:
     needs: build_and_publish
     name: Deploy image to server
     runs-on: ubuntu-latest
+>>>>>>> main
     steps:
       - name: Install ssh keys
         run: |

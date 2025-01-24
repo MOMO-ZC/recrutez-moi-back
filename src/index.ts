@@ -3,6 +3,7 @@ import express, { Express, Request, Response } from "express";
 import CandidateRoutes from "./routes/CandidateRoutes";
 import CompanyRoutes from "./routes/CompanyRoutes";
 import AuthenticationRoutes from "./routes/AuthenticationRoutes";
+import OfferRoutes from "./routes/OfferRoutes";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ app.use("/auth", AuthenticationRoutes);
 
 app.use("/candidates", CandidateRoutes);
 app.use("/companies", CompanyRoutes);
+app.use("/offers", OfferRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

@@ -1,6 +1,6 @@
 import { InferInsertModel, InferSelectModel, eq } from "drizzle-orm";
 import ICompanyRepository from "./ICompanyRepository";
-import { companyUsersTable, usersTable } from "../schema";
+import { companiesTable, companyUsersTable, usersTable } from "../schema";
 import { db } from "..";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -8,8 +8,26 @@ type Company = InferSelectModel<typeof companyUsersTable>;
 type CompanyInsert = InferInsertModel<typeof companyUsersTable>;
 
 export default class CompanyRepository implements ICompanyRepository {
-  async add(company: CompanyInsert): Promise<Company | null> {
-    return (await db.insert(companyUsersTable).values(company).returning())[0];
+  async add(company: Omit<CompanyInsert, "company">): Promise<Company | null> {
+    // Add company profile
+    const companyProfile = (
+      await db
+        .insert(companiesTable)
+        .values({
+          name: company.name,
+          created_at: new Date().toISOString(),
+          modified_at: new Date().toISOString(),
+        })
+        .returning()
+    )[0];
+
+    // Add company user
+    return (
+      await db
+        .insert(companyUsersTable)
+        .values({ company: companyProfile.id, ...company })
+        .returning()
+    )[0];
   }
 
   async findById(id: number): Promise<Company | null> {

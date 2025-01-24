@@ -6,9 +6,9 @@ import {
   RegisterCompanyRequest,
 } from "../formats/UserRequests";
 import UserRepository from "../db/repositories/UserRepository";
-import {UserCreationError} from "../exceptions/UserExceptions";
-import {TokenProvider} from "../providers/TokenProvider";
-import {LogInResponse, RegisterResponse} from "../formats/UserResponses";
+import { UserCreationError } from "../exceptions/UserExceptions";
+import { TokenProvider } from "../providers/TokenProvider";
+import { LogInResponse, RegisterResponse } from "../formats/UserResponses";
 import CandidateRepository from "../db/repositories/CandidateRepository";
 import CompanyRepository from "../db/repositories/CompanyRepository";
 
@@ -65,9 +65,13 @@ export const registerCandidate = async (
 
   // Return a user token to keep them logged in
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({id: newUser.id, role: undefined}); // TODO: Add roles later...
+  const token = tokenProvider.sign({ id: newUser.id, role: "candidate" });
 
-  const response: RegisterResponse = {token: token};
+  const response: RegisterResponse = {
+    id: newUser.id,
+    role: "candidate",
+    token: token,
+  };
   return response;
 };
 
@@ -122,9 +126,13 @@ export const registerCompany = async (
 
   // Return a user token to keep them logged in
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({id: newUser.id, role: undefined}); // TODO: Add roles later...
+  const token = tokenProvider.sign({ id: newUser.id, role: "company" });
 
-  const response: RegisterResponse = {token: token};
+  const response: RegisterResponse = {
+    id: newUser.id,
+    role: "company",
+    token: token,
+  };
   return response;
 };
 
@@ -142,11 +150,13 @@ export const logIn = async (
     return null;
   }
 
-  // TODO: Get the corresponding candidate or company user and include their relevant info in the token
-
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({id: user.id, role: undefined}); // TODO: Add roles later...
+  const token = tokenProvider.sign({ id: user.id, role: user.role });
 
-  const response: LogInResponse = {token: token};
+  const response: LogInResponse = {
+    id: user.id,
+    role: user.role,
+    token: token,
+  };
   return response;
 };
