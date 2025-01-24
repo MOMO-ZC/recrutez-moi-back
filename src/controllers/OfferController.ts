@@ -32,6 +32,9 @@ export const AddOffer = async (
     body: request.body,
     minSalary: request.minSalary,
     maxSalary: request.maxSalary,
+    // TODO: Check that if locationType is onsite or hybrid, address is not null
+    locationType:
+      request.locationType || (request.address ? "onsite" : "remote"),
     address: request.address,
     status: request.status ?? "pending",
     image: request.image,

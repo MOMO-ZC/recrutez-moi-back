@@ -4,6 +4,7 @@ export interface AddOfferRequest {
   body: string;
   minSalary: number;
   maxSalary: number;
+  locationType?: "onsite" | "hybrid" | "remote";
   address: string;
   status?: string;
   image: string;
@@ -18,6 +19,7 @@ export interface UpdateOfferRequest {
   title: string | undefined;
   body: string | undefined;
   salary: number | undefined;
+  locationType: "onsite" | "hybrid" | "remote" | undefined;
   address: string | undefined;
   status: string | undefined;
   skills: number[] | undefined;

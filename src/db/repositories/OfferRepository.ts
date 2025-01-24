@@ -399,6 +399,7 @@ export default class OfferRepository implements IOfferRepository {
         id_company: jobOffersTable.id_company,
         title: jobOffersTable.title,
         body: jobOffersTable.body,
+        locationType: jobOffersTable.locationType,
         address: jobOffersTable.address,
         minSalary: jobOffersTable.minSalary,
         maxSalary: jobOffersTable.maxSalary,

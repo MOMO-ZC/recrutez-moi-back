@@ -202,6 +202,12 @@ export const experienceSkillsTable = pgTable(
   }
 );
 
+export const jobOffersLocationTypeEnum = pgEnum("location_type", [
+  "onsite",
+  "hybrid",
+  "remote",
+]);
+
 /* JOB_OFFERS */
 export const jobOffersTable = pgTable("job_offers", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -212,7 +218,9 @@ export const jobOffersTable = pgTable("job_offers", {
   body: varchar({ length: 10000 }).notNull(),
   minSalary: integer().notNull(),
   maxSalary: integer().notNull(),
-  address: varchar({ length: 255 }).notNull(),
+  locationType: jobOffersLocationTypeEnum().notNull(),
+  address: varchar({ length: 255 }),
+  // TODO: Add GPS coordinates with PostGIS
   status: varchar({ length: 255 }).notNull(),
   image: varchar({ length: 2550 }),
   created_at: date().notNull().notNull(),
