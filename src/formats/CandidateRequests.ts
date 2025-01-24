@@ -1,6 +1,10 @@
 import { candidateUsersTable, usersTable } from "../db/schema";
 import { InferInsertModel } from "drizzle-orm";
 
+export interface AboutCandidateRequest {
+  id: number;
+}
+
 export interface UpdateCandidateRequest
   extends Partial<Omit<InferInsertModel<typeof candidateUsersTable>, "user">>,
     Partial<

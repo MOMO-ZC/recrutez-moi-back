@@ -1,10 +1,30 @@
 import CompanyRepository from "../db/repositories/CompanyRepository";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
-import { UpdateCompanyRequest } from "../formats/CompanyRequests";
+import {
+  AboutCompanyRequest,
+  UpdateCompanyRequest,
+} from "../formats/CompanyRequests";
+import { AboutCompanyResponse } from "../formats/CompanyResponses";
 import PasswordProvider from "../providers/PasswordProvider";
 
 const passwordProvider = new PasswordProvider();
 const companyRepository = new CompanyRepository();
+
+export const AboutCompany = async (
+  request: AboutCompanyRequest
+): Promise<AboutCompanyResponse> => {
+  const company = await companyRepository.findById(request.id);
+
+  if (!company) {
+    throw new UserNotFoundError();
+  }
+
+  return {
+    id: company.user,
+    company_id: company.company,
+    name: company.name,
+  };
+};
 
 export const UpdateCompany = async (
   request: UpdateCompanyRequest

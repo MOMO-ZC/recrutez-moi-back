@@ -2,10 +2,11 @@ import { Router } from "express";
 import { registerCompany } from "../controllers/AuthenticationController";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import { ErrorResponse } from "../formats/ErrorResponse";
-import { UpdateCompany } from "../controllers/CompanyController";
+import { AboutCompany, UpdateCompany } from "../controllers/CompanyController";
 
 const router = Router();
 
+// Register a new company
 router.post("/register", async (request, response) => {
   // TODO: Validate data
 
@@ -18,6 +19,30 @@ router.post("/register", async (request, response) => {
   response.json(controllerResponse);
 });
 
+// Get company info
+router.get("/:id", async (request, response) => {
+  const id = request.params.id;
+
+  try {
+    const idNumber = parseInt(id);
+    const company = await AboutCompany({ id: idNumber });
+
+    response.json(company);
+  } catch (error) {
+    if (error instanceof UserNotFoundError) {
+      response
+        .status(404)
+        .json(new ErrorResponse(error.message, error, error.stack));
+    } else {
+      response
+        .status(500)
+        .json(new ErrorResponse("Internal server error", error));
+    }
+    return;
+  }
+});
+
+// Update company
 router.patch("/:id", async (request, response) => {
   // TODO: Validate data
   const id = request.params.id;
