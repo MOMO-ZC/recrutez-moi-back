@@ -151,7 +151,7 @@ export const logIn = async (
   }
 
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: user.id, role: user.role }); // TODO: Add roles later...
+  const token = tokenProvider.sign({ id: user.id, role: user.role });
 
   const response: LogInResponse = {
     id: user.id,
