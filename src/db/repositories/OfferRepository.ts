@@ -1,5 +1,6 @@
-import { InferSelectModel, InferInsertModel, eq } from "drizzle-orm";
+import { InferSelectModel, InferInsertModel, eq, and } from "drizzle-orm";
 import {
+  companyUsersTable,
   educationTable,
   experiencesTable,
   jobOfferEducationTable,
@@ -9,22 +10,36 @@ import {
   jobOffersTable,
   languagesTable,
   skillsTable,
+  usersLikedJobOffersTable,
 } from "../schema";
 import IOfferRepository from "./IOfferRepository";
 import { db } from "..";
+import { UserHasNoAssociatedCandidateOrCompany } from "../../exceptions/UserExceptions";
 
 type Offer = InferSelectModel<typeof jobOffersTable>;
 type OfferInsert = InferInsertModel<typeof jobOffersTable>;
 
 export default class OfferRepository implements IOfferRepository {
   async create(
-    offer: Omit<OfferInsert, "created_at" | "modified_at">
+    userId: number,
+    offer: Omit<OfferInsert, "id_company" | "created_at" | "modified_at">
   ): Promise<Offer> {
+    // Get the associated company id
+    const companyIdResponse = await db
+      .select({ company_id: companyUsersTable.company })
+      .from(companyUsersTable)
+      .where(eq(companyUsersTable.user, userId));
+    if (companyIdResponse.length === 0) {
+      // No associated company ID
+      throw new UserHasNoAssociatedCandidateOrCompany();
+    }
+
     return (
       await db
         .insert(jobOffersTable)
         .values({
           ...offer,
+          id_company: companyIdResponse[0].company_id,
           created_at: new Date().toISOString(),
           modified_at: new Date().toISOString(),
         })
@@ -73,45 +88,48 @@ export default class OfferRepository implements IOfferRepository {
     )[0];
 
     // Update skills
-    await db
-      .delete(jobOfferSkillsTable)
-      .where(eq(jobOfferSkillsTable.id_job_offer, id));
-    if (skills && skills.length > 0)
+    if (skills && skills.length > 0) {
+      await db
+        .delete(jobOfferSkillsTable)
+        .where(eq(jobOfferSkillsTable.id_job_offer, id));
       await db
         .insert(jobOfferSkillsTable)
         .values(
           skills.map((id_skill) => ({ id_job_offer: id, id_skill: id_skill }))
         );
+    }
 
     // Update education
-    await db
-      .delete(jobOfferEducationTable)
-      .where(eq(jobOfferEducationTable.id_job_offer, id));
-    if (education && education.length > 0)
+    if (education && education.length > 0) {
+      await db
+        .delete(jobOfferEducationTable)
+        .where(eq(jobOfferEducationTable.id_job_offer, id));
       await db.insert(jobOfferEducationTable).values(
         education.map((id_education) => ({
           id_job_offer: id,
           id_education: id_education,
         }))
       );
+    }
 
     // Update experiences
-    await db
-      .delete(jobOfferExperiencesTable)
-      .where(eq(jobOfferExperiencesTable.id_job_offer, id));
-    if (experiences && experiences.length > 0)
+    if (experiences && experiences.length > 0) {
+      await db
+        .delete(jobOfferExperiencesTable)
+        .where(eq(jobOfferExperiencesTable.id_job_offer, id));
       await db.insert(jobOfferExperiencesTable).values(
         experiences.map((id_experience) => ({
           id_job_offer: id,
           id_experience: id_experience,
         }))
       );
+    }
 
     // Update languages
-    await db
-      .delete(jobOfferLanguagesTable)
-      .where(eq(jobOfferLanguagesTable.id_job_offer, id));
-    if (languages && languages.length > 0)
+    if (languages && languages.length > 0) {
+      await db
+        .delete(jobOfferLanguagesTable)
+        .where(eq(jobOfferLanguagesTable.id_job_offer, id));
       await db.insert(jobOfferLanguagesTable).values(
         languages.map(({ id: id_language, level }) => ({
           id_job_offer: id,
@@ -119,6 +137,7 @@ export default class OfferRepository implements IOfferRepository {
           level: level,
         }))
       );
+    }
 
     return updatedOffer;
   }
@@ -258,6 +277,73 @@ export default class OfferRepository implements IOfferRepository {
     );
   }
 
+  async getAllWithLiked(userId: number): Promise<
+    (Offer & {
+      liked: boolean;
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    })[]
+  > {
+    const offers = await db.select().from(jobOffersTable);
+
+    return await Promise.all(
+      offers.map(async (offer) => ({
+        ...offer,
+        liked: await this.doesUserLike(offer.id, userId),
+        skills: await db
+          .select({
+            id: skillsTable.id,
+            name: skillsTable.name,
+            type: skillsTable.type,
+            category: skillsTable.category,
+          })
+          .from(skillsTable)
+          .innerJoin(
+            jobOfferSkillsTable,
+            eq(skillsTable.id, jobOfferSkillsTable.id_skill)
+          )
+          .where(eq(jobOfferSkillsTable.id_job_offer, offer.id)),
+        education: await db
+          .select({
+            id: educationTable.id,
+            domain: educationTable.domain,
+            diploma: educationTable.diploma,
+          })
+          .from(educationTable)
+          .innerJoin(
+            jobOfferEducationTable,
+            eq(educationTable.id, jobOfferEducationTable.id_education)
+          )
+          .where(eq(jobOfferEducationTable.id_job_offer, offer.id)),
+        experiences: await db
+          .select({
+            id: experiencesTable.id,
+            name: experiencesTable.name,
+          })
+          .from(experiencesTable)
+          .innerJoin(
+            jobOfferExperiencesTable,
+            eq(experiencesTable.id, jobOfferExperiencesTable.id_experience)
+          )
+          .where(eq(jobOfferExperiencesTable.id_job_offer, offer.id)),
+        languages: await db
+          .select({
+            id: languagesTable.id,
+            name: languagesTable.name,
+            level: jobOfferLanguagesTable.level,
+          })
+          .from(languagesTable)
+          .innerJoin(
+            jobOfferLanguagesTable,
+            eq(languagesTable.id, jobOfferLanguagesTable.id_language)
+          )
+          .where(eq(jobOfferLanguagesTable.id_job_offer, offer.id)),
+      }))
+    );
+  }
+
   async addSkills(offerId: number, skills: number[]): Promise<null> {
     await db.insert(jobOfferSkillsTable).values(
       skills.map((id_skill) => ({
@@ -303,6 +389,63 @@ export default class OfferRepository implements IOfferRepository {
       }))
     );
 
+    return null;
+  }
+
+  async getLiked(userId: number): Promise<Offer[]> {
+    return db
+      .select({
+        id: jobOffersTable.id,
+        id_company: jobOffersTable.id_company,
+        title: jobOffersTable.title,
+        body: jobOffersTable.body,
+        address: jobOffersTable.address,
+        minSalary: jobOffersTable.minSalary,
+        maxSalary: jobOffersTable.maxSalary,
+        status: jobOffersTable.status,
+        image: jobOffersTable.image,
+        created_at: jobOffersTable.created_at,
+        modified_at: jobOffersTable.modified_at,
+      })
+      .from(usersLikedJobOffersTable)
+      .innerJoin(
+        jobOffersTable,
+        eq(usersLikedJobOffersTable.id_job_offer, jobOffersTable.id)
+      )
+      .where(eq(usersLikedJobOffersTable.id_user, userId));
+  }
+
+  async doesUserLike(offerId: number, userId: number): Promise<boolean> {
+    const liked = await db
+      .select()
+      .from(usersLikedJobOffersTable)
+      .where(
+        and(
+          eq(usersLikedJobOffersTable.id_job_offer, offerId),
+          eq(usersLikedJobOffersTable.id_user, userId)
+        )
+      );
+
+    return liked.length > 0;
+  }
+
+  async like(offerId: number, userId: number): Promise<null> {
+    await db.insert(usersLikedJobOffersTable).values({
+      id_user: userId,
+      id_job_offer: offerId,
+      created_at: new Date().toISOString(),
+    });
+
+    return null;
+  }
+
+  async unlike(offerId: number, userId: number): Promise<null> {
+    await db
+      .delete(usersLikedJobOffersTable)
+      .where(
+        eq(usersLikedJobOffersTable.id_job_offer, offerId) &&
+          eq(usersLikedJobOffersTable.id_user, userId)
+      );
     return null;
   }
 }

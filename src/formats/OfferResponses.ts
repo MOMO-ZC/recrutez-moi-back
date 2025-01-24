@@ -11,6 +11,7 @@ export interface RemoveOfferResponse {}
 
 export interface GetOfferByIdResponse
   extends InferSelectModel<typeof jobOffersTable> {
+  liked: boolean;
   skills: { id: number; name: string; type: string; category: string }[];
   education: { id: number; domain: string; diploma: string }[];
   experiences: { id: number; name: string }[];
@@ -18,9 +19,19 @@ export interface GetOfferByIdResponse
 }
 
 export interface GetOffersResponse
-  extends Array<InferSelectModel<typeof jobOffersTable>> {
-  skills: { id: number; name: string; type: string; category: string }[];
-  education: { id: number; domain: string; diploma: string }[];
-  experiences: { id: number; name: string }[];
-  languages: { id: number; name: string; level: string }[];
-}
+  extends Array<
+    InferSelectModel<typeof jobOffersTable> & {
+      liked: boolean;
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    }
+  > {}
+
+export interface GetLikedOffersResponse
+  extends Array<InferSelectModel<typeof jobOffersTable>> {}
+
+export interface LikeOfferResponse {}
+
+export interface UnlikeOfferResponse {}

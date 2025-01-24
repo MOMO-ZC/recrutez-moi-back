@@ -15,7 +15,7 @@ export default interface ICompanyRepository {
   add(company: Omit<CompanyInsert, "company">): Promise<Company | null>;
 
   /**
-   * Find a company by their ID.
+   * Find a company by the ID of their user.
    * @param id The ID of the company to find
    */
   findById(id: number): Promise<Company | null>;

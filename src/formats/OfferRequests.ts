@@ -1,5 +1,5 @@
 export interface AddOfferRequest {
-  id_company: number;
+  userId: number; // Set by the authentication middleware
   title: string;
   body: string;
   minSalary: number;
@@ -32,6 +32,23 @@ export interface RemoveOfferRequest {
 
 export interface GetOfferByIdRequest {
   id: number;
+  id_user: number; // Set by the authentication middleware
 }
 
-export interface GetAllOffersRequest {}
+export interface GetAllOffersRequest {
+  id_user: number; // Set by the authentication middleware
+}
+
+export interface GetLikedOffersRequest {
+  id_user: number; // Set by the authentication middleware
+}
+
+export interface LikeOfferRequest {
+  id_user: number; // Set by the authentication middleware
+  id_offer: number;
+}
+
+export interface UnlikeOfferRequest {
+  id_user: number; // Set by the authentication middleware
+  id_offer: number;
+}

@@ -18,3 +18,10 @@ export class UserAlreadyExists extends Error {
     this.name = "UserAlreadyExists";
   }
 }
+
+export class UserHasNoAssociatedCandidateOrCompany extends Error {
+  constructor(message?: string) {
+    super(message || "User has no associated candidate or company");
+    this.name = "UserHasNoAssociatedCandidateOrCompany";
+  }
+}

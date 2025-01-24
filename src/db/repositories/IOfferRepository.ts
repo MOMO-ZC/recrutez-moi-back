@@ -16,7 +16,8 @@ export default interface IOfferRepository {
    * @throws {Error} If the offer creation fails
    */
   create(
-    offer: Omit<OfferInsert, "created_at" | "modified_at">
+    userId: number,
+    offer: Omit<OfferInsert, "id_company" | "created_at" | "modified_at">
   ): Promise<Offer>;
 
   /**
@@ -78,6 +79,19 @@ export default interface IOfferRepository {
   >;
 
   /**
+   * Retrieves all offers from the repository and whether the user liked them or not
+   * @param userId The id of the user to get offers for
+   */
+  getAllWithLiked(userId: number): Promise<
+    (Offer & {
+      liked: boolean;
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    })[]
+  >;
+  /**
    * Adds skills to an offer
    * @param offerId The id of the offer to add skills to
    * @param skills The ids of the skills to add to the offer
@@ -107,4 +121,32 @@ export default interface IOfferRepository {
     offerId: number,
     languages: { id: number; level: string }[]
   ): Promise<null>;
+
+  /**
+   * Retrieves all offers that a user has liked
+   * @param userId The id of the user to get liked offers for
+   */
+  getLiked(userId: number): Promise<Offer[]>;
+
+  /**
+   * Returns whether a user has liked a specific offer
+   * @param offerId The id of the offer
+   * @param userId The id of the user
+   * @returns True if the user has liked the offer, false otherwise
+   */
+  doesUserLike(offerId: number, userId: number): Promise<boolean>;
+
+  /**
+   * Likes an offer on behalf of a user
+   * @param offerId The id of the offer to like
+   * @param userId The id of the user liking the offer
+   */
+  like(offerId: number, userId: number): Promise<null>;
+
+  /**
+   * Unlikes an offer for a user
+   * @param offerId The id of the offer to unlike
+   * @param userId the id of the user unliking the offer
+   */
+  unlike(offerId: number, userId: number): Promise<null>;
 }
