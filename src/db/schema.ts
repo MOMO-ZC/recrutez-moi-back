@@ -6,6 +6,7 @@ import {
   primaryKey,
   pgEnum,
   unique,
+  geometry,
 } from "drizzle-orm/pg-core";
 
 /* COMPANIES */
@@ -47,7 +48,8 @@ export const candidateUsersTable = pgTable("candidate_users", {
   firstname: varchar({ length: 255 }).notNull(),
   lastname: varchar({ length: 255 }).notNull(),
   phone: varchar({ length: 255 }),
-  address: varchar({ length: 255 }).notNull(),
+  address: varchar({ length: 255 }),
+  gps_location: geometry("gps_candidate", { srid: 4326 }),
   birthdate: date({ mode: "date" }).notNull(),
   lookingForTitle: varchar({ length: 255 }), // name of the job
   lookingForExperience: integer(), // 1: junior, 2: confirmed, 3: senior
@@ -220,7 +222,7 @@ export const jobOffersTable = pgTable("job_offers", {
   maxSalary: integer().notNull(),
   locationType: jobOffersLocationTypeEnum().notNull(),
   address: varchar({ length: 255 }),
-  // TODO: Add GPS coordinates with PostGIS
+  gps_location: geometry("offer_gps", { srid: 4326 }),
   status: varchar({ length: 255 }).notNull(),
   image: varchar({ length: 2550 }),
   created_at: date().notNull().notNull(),

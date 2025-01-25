@@ -3,7 +3,7 @@ export interface AboutCandidateResponse {
   firstname: string;
   lastname: string;
   phone?: string;
-  address: string;
+  address?: string;
   birthdate: string;
   lookingForTitle?: string;
   lookingForExperience?: number;

@@ -13,6 +13,7 @@ import {
 import UserRepository from "../db/repositories/UserRepository";
 import bcrypt from "bcrypt";
 import { UserCreationError } from "../exceptions/UserExceptions";
+import GeocodingProvider from "../providers/GeocodingProvider";
 
 jest.mock("../db/repositories/UserRepository");
 jest.mock("bcrypt");
@@ -26,6 +27,7 @@ jest.mock("../providers/TokenProvider", () => ({
     sign: jest.fn().mockReturnValue("mock-token"),
   })),
 }));
+jest.mock("../providers/GeocodingProvider");
 
 const mockUserRepository = UserRepository as jest.Mocked<typeof UserRepository>;
 const mockCandidateRepository = CandidateRepository as jest.Mocked<
@@ -35,6 +37,9 @@ const mockCompanyRepository = CompanyRepository as jest.Mocked<
   typeof CompanyRepository
 >;
 const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
+const mockGeocodingProvider = GeocodingProvider as jest.Mocked<
+  typeof GeocodingProvider
+>;
 
 describe("AuthenticationController", () => {
   beforeEach(() => {
@@ -68,6 +73,7 @@ describe("AuthenticationController", () => {
         lastname: request.lastname,
         birthdate: new Date(request.birthdate),
         address: request.address,
+        gps_location: [0, 0],
       };
 
       (mockUserRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
@@ -80,6 +86,10 @@ describe("AuthenticationController", () => {
       (mockCandidateRepository.prototype.add as jest.Mock).mockResolvedValue(
         createdCandidate
       );
+      (mockGeocodingProvider.prototype.geocode as jest.Mock).mockResolvedValue({
+        lat: 0,
+        lon: 0,
+      });
 
       // Act
       const result = await registerCandidate(request);
@@ -102,6 +112,7 @@ describe("AuthenticationController", () => {
         lastname: request.lastname,
         birthdate: new Date(request.birthdate),
         address: request.address,
+        gps_location: [0, 0],
       });
       expect(result).toEqual({ id: 1, role: "candidate", token: "mock-token" });
     });

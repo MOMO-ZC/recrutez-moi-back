@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import CandidateRepository from "../db/repositories/CandidateRepository";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import {
@@ -5,6 +6,7 @@ import {
   UpdateCandidateRequest,
 } from "../formats/CandidateRequests";
 import { AboutCandidateResponse } from "../formats/CandidateResponses";
+import GeocodingProvider from "../providers/GeocodingProvider";
 import PasswordProvider from "../providers/PasswordProvider";
 
 const passwordProvider = new PasswordProvider();
@@ -24,7 +26,7 @@ export const AboutCandidate = async (
     firstname: candidate.firstname,
     lastname: candidate.lastname,
     phone: candidate.phone || undefined,
-    address: candidate.address,
+    address: candidate.address || undefined,
     birthdate: candidate.birthdate.toISOString(),
     lookingForTitle: candidate.lookingForTitle || undefined,
     lookingForExperience: candidate.lookingForExperience || undefined,
@@ -45,6 +47,19 @@ export const UpdateCandidate = async (
   // Check if the password is being updated
   if (updateData.password) {
     updateData.password = await passwordProvider.hash(updateData.password);
+  }
+
+  // Check if the address is being updated
+  if (updateData.address) {
+    // Call Geocoding API to get the GPS location
+    const geocodingProvider = new GeocodingProvider();
+    const gpsLocationResponse = await geocodingProvider.geocode(
+      updateData.address
+    );
+    updateData.gps_location = [
+      gpsLocationResponse.lon,
+      gpsLocationResponse.lat,
+    ];
   }
 
   // Update the candidate and its associated user
