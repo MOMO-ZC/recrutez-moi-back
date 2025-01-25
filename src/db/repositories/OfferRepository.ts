@@ -74,11 +74,13 @@ export default class OfferRepository implements IOfferRepository {
       }
     > & {
       id: number;
+      gps_location?: [number, number];
     }
   ): Promise<Offer> {
     const { id, skills, education, experiences, languages, ...updateFields } =
       offer;
 
+    console.log("updateFields", updateFields);
     const updatedOffer = (
       await db
         .update(jobOffersTable)
@@ -401,6 +403,7 @@ export default class OfferRepository implements IOfferRepository {
         body: jobOffersTable.body,
         locationType: jobOffersTable.locationType,
         address: jobOffersTable.address,
+        gps_location: jobOffersTable.gps_location,
         minSalary: jobOffersTable.minSalary,
         maxSalary: jobOffersTable.maxSalary,
         status: jobOffersTable.status,

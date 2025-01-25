@@ -20,12 +20,24 @@ import {
   RemoveOfferResponse,
   UpdateOfferResponse,
 } from "../formats/OfferResponses";
+import GeocodingProvider from "../providers/GeocodingProvider";
 
 const offerRepository = new OfferRepository();
 
 export const AddOffer = async (
   request: AddOfferRequest
 ): Promise<AddOfferResponse> => {
+  // Check if there is an address
+  let gpsLocation: [number, number] | null = null;
+  if (request.address) {
+    // Get the gps coordinates from the address
+    const geocodingProvider = new GeocodingProvider();
+    const gpsLocationResponse = await geocodingProvider.geocode(
+      request.address
+    );
+    gpsLocation = [gpsLocationResponse.lon, gpsLocationResponse.lat];
+  }
+
   // Separate the offer from the other tables
   const requestOffer = {
     title: request.title,
@@ -36,6 +48,7 @@ export const AddOffer = async (
     locationType:
       request.locationType || (request.address ? "onsite" : "remote"),
     address: request.address,
+    gps_location: gpsLocation,
     status: request.status ?? "pending",
     image: request.image,
   };
@@ -68,7 +81,26 @@ export const AddOffer = async (
 export const UpdateOffer = async (
   request: UpdateOfferRequest
 ): Promise<UpdateOfferResponse> => {
-  return await offerRepository.updateWithLinks(request);
+  let requestData: UpdateOfferRequest & { gps_location?: [number, number] } = {
+    ...request,
+  };
+  console.log(requestData);
+  console.log(requestData.address);
+  console.log(requestData.address ? "yes" : "no");
+  if (requestData.address) {
+    // Get the gps coordinates from the address
+    const geocodingProvider = new GeocodingProvider();
+    const gpsLocationResponse = await geocodingProvider.geocode(
+      requestData.address
+    );
+    console.log("OK", gpsLocationResponse);
+    requestData.gps_location = [
+      gpsLocationResponse.lon,
+      gpsLocationResponse.lat,
+    ];
+  }
+
+  return await offerRepository.updateWithLinks(requestData);
 };
 
 export const RemoveOffer = async (

@@ -11,6 +11,8 @@ import { TokenProvider } from "../providers/TokenProvider";
 import { LogInResponse, RegisterResponse } from "../formats/UserResponses";
 import CandidateRepository from "../db/repositories/CandidateRepository";
 import CompanyRepository from "../db/repositories/CompanyRepository";
+import GeocodingProvider from "../providers/GeocodingProvider";
+import { sql } from "drizzle-orm";
 
 const userRepository = new UserRepository();
 const candidateRepository = new CandidateRepository();
@@ -42,6 +44,18 @@ export const registerCandidate = async (
     throw new UserCreationError();
   }
 
+  let gpsLocation: [number, number] | null = null;
+  // Check if an address was provided
+  if (request.address) {
+    // Call Geocoding API to get the GPS location
+    const geocodingProvider = new GeocodingProvider();
+    const gpsLocationResponse = await geocodingProvider.geocode(
+      request.address
+    );
+    // gpsLocation = sql`ST_SetSRID(ST_MakePoint(${gpsLocationResponse.lon}, ${gpsLocationResponse.lat}), 4326)`;
+    gpsLocation = [gpsLocationResponse.lon, gpsLocationResponse.lat];
+  }
+
   // Add the candidate user
   const newCandidate = await candidateRepository.add({
     user: newUser.id,
@@ -52,6 +66,7 @@ export const registerCandidate = async (
         ? request.birthdate
         : new Date(request.birthdate),
     address: request.address,
+    gps_location: gpsLocation,
   });
 
   // Check if the candidate has been added to the database
