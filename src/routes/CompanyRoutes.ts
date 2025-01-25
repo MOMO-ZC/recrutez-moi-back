@@ -3,6 +3,8 @@ import { registerCompany } from "../controllers/AuthenticationController";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import { ErrorResponse } from "../formats/ErrorResponse";
 import { AboutCompany, UpdateCompany } from "../controllers/CompanyController";
+import authenticationMiddleware from "../middlewares/authentication";
+import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
 
 const router = Router();
 
@@ -43,12 +45,13 @@ router.get("/:id", async (request, response) => {
 });
 
 // Update company
-router.patch("/:id", async (request, response) => {
+router.patch("/:id", authenticationMiddleware, async (request, response) => {
   // TODO: Validate data
-  const id = request.params.id;
+  const id = parseInt(request.params.id);
+  const userId = parseInt(request.params.userId);
 
   try {
-    await UpdateCompany({ id, ...request.body });
+    await UpdateCompany({ id, userId, ...request.body });
 
     response.status(200).send();
   } catch (error) {
@@ -56,6 +59,10 @@ router.patch("/:id", async (request, response) => {
       response
         .status(404)
         .json(new ErrorResponse(error.message, error, error.stack));
+    } else if (error instanceof UnauthorizedAccessError) {
+      response
+        .status(401)
+        .json(new ErrorResponse("Unauthorized access", error, error.stack));
     } else {
       response
         .status(500)

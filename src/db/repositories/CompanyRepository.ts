@@ -97,10 +97,23 @@ export default class CompanyRepository implements ICompanyRepository {
         .where(eq(usersTable.id, id));
 
       // Update candidate_users table
-      await tx
-        .update(companyUsersTable)
-        .set(candidateUpdateData)
-        .where(eq(companyUsersTable.user, id));
+      const candidate_user = (
+        await tx
+          .update(companyUsersTable)
+          .set(candidateUpdateData)
+          .where(eq(companyUsersTable.user, id))
+          .returning()
+      )[0];
+
+      // Update company table
+      if (candidateUpdateData.name)
+        await tx
+          .update(companiesTable)
+          .set({
+            name: candidateUpdateData.name,
+            modified_at: new Date().toISOString(),
+          })
+          .where(eq(companiesTable.id, candidate_user.company));
     });
     return null;
   }

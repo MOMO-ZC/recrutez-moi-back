@@ -1,4 +1,5 @@
 import CompanyRepository from "../db/repositories/CompanyRepository";
+import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import {
   AboutCompanyRequest,
@@ -29,7 +30,17 @@ export const AboutCompany = async (
 export const UpdateCompany = async (
   request: UpdateCompanyRequest
 ): Promise<null> => {
-  let { id, ...updateData } = request;
+  const id = request.id;
+  const updateData = {
+    name: request.name,
+    email: request.email,
+    password: request.password,
+  };
+
+  // Check that the user is updating themselves
+  if (request.userId !== id) {
+    throw new UnauthorizedAccessError();
+  }
 
   // Check if the user exists
   const company = await companyRepository.findById(id);
