@@ -6,6 +6,8 @@ import {
 } from "../controllers/CandidateController";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import { ErrorResponse } from "../formats/ErrorResponse";
+import authenticationMiddleware from "../middlewares/authentication";
+import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
 
 const router = Router();
 
@@ -23,12 +25,16 @@ router.post("/register", async (request, response) => {
 });
 
 // Get candidate info
-router.get("/:id", async (request, response) => {
+router.get("/:id", authenticationMiddleware, async (request, response) => {
   const id = request.params.id;
 
   try {
     const idNumber = parseInt(id);
-    const candidate = await AboutCandidate({ id: idNumber });
+    const candidate = await AboutCandidate({
+      id: idNumber,
+      userId: parseInt(request.params.userId),
+      userRole: request.params.userRole,
+    });
 
     response.json(candidate);
   } catch (error) {
@@ -36,6 +42,10 @@ router.get("/:id", async (request, response) => {
       response
         .status(404)
         .json(new ErrorResponse(error.message, error, error.stack));
+    } else if (error instanceof UnauthorizedAccessError) {
+      response
+        .status(401)
+        .json(new ErrorResponse("Unauthorized access", error, error.stack));
     } else {
       response
         .status(500)
@@ -46,12 +56,16 @@ router.get("/:id", async (request, response) => {
 });
 
 // Update candidate
-router.patch("/:id", async (request, response) => {
+router.patch("/:id", authenticationMiddleware, async (request, response) => {
   // TODO: Validate data
   const id = request.params.id;
 
   try {
-    await UpdateCandidate({ id, ...request.body });
+    await UpdateCandidate({
+      id: id,
+      userId: parseInt(request.params.userId),
+      ...request.body,
+    });
 
     response.status(200).send();
   } catch (error) {
@@ -59,6 +73,10 @@ router.patch("/:id", async (request, response) => {
       response
         .status(404)
         .json(new ErrorResponse(error.message, error, error.stack));
+    } else if (error instanceof UnauthorizedAccessError) {
+      response
+        .status(401)
+        .json(new ErrorResponse("Unauthorized access", error, error.stack));
     } else {
       response
         .status(500)

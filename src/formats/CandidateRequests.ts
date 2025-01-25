@@ -3,6 +3,8 @@ import { InferInsertModel } from "drizzle-orm";
 
 export interface AboutCandidateRequest {
   id: number;
+  userId: number; // Set by the authentication middleware | The id of the user making the request. Can be a candidate or a company
+  userRole: string; // Set by the authentication middleware | The role of the user making the request. Can be a candidate or a company
 }
 
 export interface UpdateCandidateRequest
@@ -14,4 +16,5 @@ export interface UpdateCandidateRequest
       >
     > {
   id: number;
+  userId: number; // Set by the authentication middleware | The id of the user making the request. Can only be a candidate
 }

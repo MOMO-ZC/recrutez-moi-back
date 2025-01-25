@@ -8,6 +8,7 @@ import {
 import { AboutCandidateResponse } from "../formats/CandidateResponses";
 import GeocodingProvider from "../providers/GeocodingProvider";
 import PasswordProvider from "../providers/PasswordProvider";
+import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
 
 const passwordProvider = new PasswordProvider();
 const candidateRepository = new CandidateRepository();
@@ -15,6 +16,16 @@ const candidateRepository = new CandidateRepository();
 export const AboutCandidate = async (
   request: AboutCandidateRequest
 ): Promise<AboutCandidateResponse> => {
+  // Check that the user is checking about themselves (candidate) or about a candidate who applied to their offer (company)
+  if (request.userRole === "candidate") {
+    // Check that the is the same as the one in the token
+    if (request.id !== request.userId) {
+      throw new UnauthorizedAccessError();
+    }
+  } else {
+    // Check that the user has applied to an offer from the company
+    // TODO: Do that.
+  }
   const candidate = await candidateRepository.findById(request.id);
 
   if (!candidate) {
@@ -36,7 +47,12 @@ export const AboutCandidate = async (
 export const UpdateCandidate = async (
   request: UpdateCandidateRequest
 ): Promise<null> => {
-  let { id, ...updateData } = request;
+  let { id, userId, ...updateData } = request;
+
+  // Check that the user is updating themselves
+  if (userId !== id) {
+    throw new UnauthorizedAccessError();
+  }
 
   // Check if the user exists
   const candidate = await candidateRepository.findById(id);

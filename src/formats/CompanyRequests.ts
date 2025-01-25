@@ -14,4 +14,5 @@ export interface UpdateCompanyRequest
       >
     > {
   id: number;
+  userId: number; // Set by the authentication middleware | The id of the user making the request.
 }

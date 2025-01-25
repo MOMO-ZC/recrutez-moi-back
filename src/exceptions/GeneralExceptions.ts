@@ -11,3 +11,10 @@ export class DatabaseInsertionError extends DatabaseError {
     this.name = "DatabaseInsertionError";
   }
 }
+
+export class UnauthorizedAccessError extends Error {
+  constructor(message?: string) {
+    super(message || "You cannot access this resource.");
+    this.name = "UnauthorizedAccessError";
+  }
+}
