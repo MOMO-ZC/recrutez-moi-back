@@ -35,3 +35,18 @@ export interface GetLikedOffersResponse
 export interface LikeOfferResponse {}
 
 export interface UnlikeOfferResponse {}
+
+export interface ApplyOfferResponse {
+  id: number;
+}
+
+export interface GetApplicationsOfferResponse {
+  applications: {
+    id: number;
+    offerId: number;
+    userId: number;
+    userFullname: string;
+    status: string;
+    appliedAt: Date;
+  }[];
+}

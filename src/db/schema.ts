@@ -218,9 +218,9 @@ export const jobOffersTable = pgTable("job_offers", {
     .notNull(),
   title: varchar({ length: 255 }).notNull(),
   body: varchar({ length: 10000 }).notNull(),
-  minSalary: integer().notNull(),
-  maxSalary: integer().notNull(),
-  locationType: jobOffersLocationTypeEnum().notNull(),
+  min_salary: integer().notNull(),
+  max_salary: integer().notNull(),
+  location_type: jobOffersLocationTypeEnum().notNull(),
   address: varchar({ length: 255 }),
   gps_location: geometry("offer_gps", { srid: 4326 }),
   status: varchar({ length: 255 }).notNull(),
@@ -317,6 +317,12 @@ export const usersLanguagesTable = pgTable(
   }
 );
 
+export const jobApplicationsStatusEnum = pgEnum("status", [
+  "pending",
+  "offered",
+  "rejected",
+]);
+
 /* JOB APPLICATIONS */
 export const applicationsTable = pgTable(
   "applications",
@@ -328,7 +334,7 @@ export const applicationsTable = pgTable(
     id_job_offer: integer()
       .references(() => jobOffersTable.id)
       .notNull(),
-    status: varchar({ length: 255 }).notNull(),
+    status: jobApplicationsStatusEnum().notNull(),
     created_at: date().notNull(),
     modified_at: date().notNull(),
   },

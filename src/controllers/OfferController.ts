@@ -4,6 +4,7 @@ import { OfferNotFoundError } from "../exceptions/OfferExceptions";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import {
   AddOfferRequest,
+  ApplyOfferRequest,
   GetAllOffersRequest,
   GetLikedOffersRequest,
   GetOfferByIdRequest,
@@ -13,6 +14,8 @@ import {
 } from "../formats/OfferRequests";
 import {
   AddOfferResponse,
+  ApplyOfferResponse,
+  GetApplicationsOfferResponse,
   GetLikedOffersResponse,
   GetOfferByIdResponse,
   GetOffersResponse,
@@ -42,11 +45,11 @@ export const AddOffer = async (
   const requestOffer = {
     title: request.title,
     body: request.body,
-    minSalary: request.minSalary,
-    maxSalary: request.maxSalary,
+    min_salary: request.min_salary,
+    max_salary: request.max_salary,
     // TODO: Check that if locationType is onsite or hybrid, address is not null
-    locationType:
-      request.locationType || (request.address ? "onsite" : "remote"),
+    location_type:
+      request.location_type || (request.address ? "onsite" : "remote"),
     address: request.address,
     gps_location: gpsLocation,
     status: request.status ?? "pending",
@@ -168,4 +171,50 @@ export const UnlikeOffer = async (
 ): Promise<LikeOfferResponse> => {
   await offerRepository.unlike(request.id_offer, request.id_user);
   return {};
+};
+
+export const ApplyOffer = async (
+  request: ApplyOfferRequest
+): Promise<ApplyOfferResponse> => {
+  // Check if the offer exists
+  const offer = await offerRepository.getById(request.id_offer);
+  if (!offer.id) {
+    throw new OfferNotFoundError();
+  }
+
+  // Check if the user exists
+  const user = await new UserRepository().findById(request.id_user);
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  // Check if the user already applied
+  const alreadyApplied = await offerRepository.hasUserApplied(
+    request.id_offer,
+    request.id_user
+  );
+  if (alreadyApplied) {
+    throw new Error("User already applied to this offer");
+  }
+
+  const application = await offerRepository.apply(
+    request.id_offer,
+    request.id_user
+  );
+  return application;
+};
+
+export const GetApplications = async (
+  offerId: number
+): Promise<GetApplicationsOfferResponse> => {
+  const applications = await offerRepository.getApplications(offerId);
+  const formattedApplications = applications.map((application) => ({
+    id: application.id,
+    offerId: offerId,
+    userId: application.id_user,
+    userFullname: application.userFullname,
+    status: application.status,
+    appliedAt: new Date(application.created_at),
+  }));
+  return { applications: formattedApplications };
 };

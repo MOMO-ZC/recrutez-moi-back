@@ -1,7 +1,9 @@
 import { Router } from "express";
 import {
   AddOffer,
+  ApplyOffer,
   GetAllOffers,
+  GetApplications,
   GetLikedOffers,
   GetOfferById,
   LikeOffer,
@@ -313,6 +315,32 @@ router.post(
       id_offer: parseInt(request.params.id),
     });
 
+    response.json(controllerResponse);
+  }
+);
+
+// Apply to an offer
+router.post(
+  "/:id/apply",
+  authenticationMiddleware,
+  async (request, response) => {
+    const controllerResponse = await ApplyOffer({
+      id_user: parseInt(request.params.userId),
+      id_offer: parseInt(request.params.id),
+    });
+
+    response.json(controllerResponse);
+  }
+);
+
+// Get all applications for an offer
+router.get(
+  "/:id/applications",
+  authenticationMiddleware,
+  async (request, response) => {
+    const controllerResponse = await GetApplications(
+      parseInt(request.params.id)
+    );
     response.json(controllerResponse);
   }
 );

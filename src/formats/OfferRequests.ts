@@ -2,9 +2,9 @@ export interface AddOfferRequest {
   userId: number; // Set by the authentication middleware
   title: string;
   body: string;
-  minSalary: number;
-  maxSalary: number;
-  locationType?: "onsite" | "hybrid" | "remote";
+  min_salary: number;
+  max_salary: number;
+  location_type?: "onsite" | "hybrid" | "remote";
   address: string;
   status?: string;
   image: string;
@@ -18,8 +18,9 @@ export interface UpdateOfferRequest {
   id: number;
   title: string | undefined;
   body: string | undefined;
-  salary: number | undefined;
-  locationType?: "onsite" | "hybrid" | "remote";
+  min_salary: number | undefined;
+  max_salary: number | undefined;
+  location_type?: "onsite" | "hybrid" | "remote";
   address: string | undefined;
   status: string | undefined;
   skills: number[] | undefined;
@@ -53,4 +54,14 @@ export interface LikeOfferRequest {
 export interface UnlikeOfferRequest {
   id_user: number; // Set by the authentication middleware
   id_offer: number;
+}
+
+export interface ApplyOfferRequest {
+  id_user: number; // Set by the authentication middleware
+  id_offer: number; // Set in the URL
+}
+
+export interface GetApplicationsOfferRequest {
+  id_user: number; // Set by the authentication middleware
+  id_offer: number; // Set in the URL
 }
