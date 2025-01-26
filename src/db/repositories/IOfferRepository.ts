@@ -149,4 +149,34 @@ export default interface IOfferRepository {
    * @param userId the id of the user unliking the offer
    */
   unlike(offerId: number, userId: number): Promise<null>;
+
+  /**
+   * Applies to an offer on behalf of a user
+   * @param offerId The id of the offer to apply to
+   * @param userId The id of the user applying to the offer
+   */
+  apply(offerId: number, userId: number): Promise<{ id: number }>;
+
+  /**
+   * Retrieves all applications for an offer
+   * @param offerId The id of the offer to get applications for
+   */
+  getApplications(offerId: number): Promise<
+    {
+      id: number;
+      id_user: number;
+      userFullname: string;
+      status: string;
+      created_at: string;
+      modified_at: string;
+    }[]
+  >;
+
+  /**
+   * Checks if a user has already applied to an offer
+   * @param offerId The id of the offer
+   * @param userId The id of the user
+   * @returns True if the user has already applied, false otherwise
+   */
+  hasUserApplied(offerId: number, userId: number): Promise<boolean>;
 }

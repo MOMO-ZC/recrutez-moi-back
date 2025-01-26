@@ -1,5 +1,7 @@
-import { InferSelectModel, InferInsertModel, eq, and } from "drizzle-orm";
+import { InferSelectModel, InferInsertModel, eq, and, sql } from "drizzle-orm";
 import {
+  applicationsTable,
+  candidateUsersTable,
   companyUsersTable,
   educationTable,
   experiencesTable,
@@ -401,11 +403,11 @@ export default class OfferRepository implements IOfferRepository {
         id_company: jobOffersTable.id_company,
         title: jobOffersTable.title,
         body: jobOffersTable.body,
-        locationType: jobOffersTable.locationType,
         address: jobOffersTable.address,
         gps_location: jobOffersTable.gps_location,
-        minSalary: jobOffersTable.minSalary,
-        maxSalary: jobOffersTable.maxSalary,
+        min_salary: jobOffersTable.min_salary,
+        max_salary: jobOffersTable.max_salary,
+        location_type: jobOffersTable.location_type,
         status: jobOffersTable.status,
         image: jobOffersTable.image,
         created_at: jobOffersTable.created_at,
@@ -451,5 +453,62 @@ export default class OfferRepository implements IOfferRepository {
           eq(usersLikedJobOffersTable.id_user, userId)
       );
     return null;
+  }
+
+  async apply(offerId: number, userId: number): Promise<{ id: number }> {
+    const application = await db
+      .insert(applicationsTable)
+      .values({
+        id_user: userId,
+        id_job_offer: offerId,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        modified_at: new Date().toISOString(),
+      })
+      .returning();
+    return { id: application[0].id };
+  }
+
+  async getApplications(offerId: number): Promise<
+    {
+      id: number;
+      id_user: number;
+      userFullname: string;
+      status: string;
+      created_at: string;
+      modified_at: string;
+    }[]
+  > {
+    return db
+      .select({
+        id: applicationsTable.id,
+        id_user: applicationsTable.id_user,
+        userFullname: sql<string>`${candidateUsersTable.firstname} || ' ' || ${candidateUsersTable.lastname}`,
+        status: applicationsTable.status,
+        created_at: applicationsTable.created_at,
+        modified_at: applicationsTable.modified_at,
+      })
+      .from(applicationsTable)
+      .where(eq(applicationsTable.id_job_offer, offerId))
+      .innerJoin(
+        candidateUsersTable,
+        eq(candidateUsersTable.user, applicationsTable.id_user)
+      );
+  }
+
+  async hasUserApplied(offerId: number, userId: number): Promise<boolean> {
+    return (
+      (
+        await db
+          .select()
+          .from(applicationsTable)
+          .where(
+            and(
+              eq(applicationsTable.id_job_offer, offerId),
+              eq(applicationsTable.id_user, userId)
+            )
+          )
+      ).length > 0
+    );
   }
 }
