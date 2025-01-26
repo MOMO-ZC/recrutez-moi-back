@@ -1,26 +1,29 @@
 import { ITokenProvider } from "./ITokenProvider";
-import jwt, { Algorithm } from "jsonwebtoken";
+import jwt, { Algorithm, Secret, SignOptions } from "jsonwebtoken";
 
 /**
  * Provides JWT token management.
  */
 export class TokenProvider implements ITokenProvider {
   private readonly algorithm: Algorithm;
-  private readonly expiresIn: string;
-  private readonly secret: string;
+  private readonly expiresIn: number;
+  private readonly secret: Secret;
 
   constructor() {
     this.algorithm = (process.env.JWT_ALGORITHM as Algorithm) || "HS512";
-    this.expiresIn = process.env.JWT_EXPIRES_IN || "1d";
-    this.secret = process.env.JWT_SECRET!;
+    this.expiresIn = process.env.JWT_EXPIRES_IN
+      ? parseInt(process.env.JWT_EXPIRES_IN)
+      : 86400;
+    this.secret = process.env.JWT_SECRET || "defaultSecretKey";
   }
 
   sign(payload: any): string {
-    return jwt.sign(payload, this.secret, {
+    const options: SignOptions = {
       algorithm: this.algorithm,
       expiresIn: this.expiresIn,
       issuer: "recrutez-moi-backend",
-    });
+    };
+    return jwt.sign(payload, this.secret, options);
   }
 
   verify(token: string): boolean {
