@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import CandidateRepository from "../db/repositories/CandidateRepository";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import {
