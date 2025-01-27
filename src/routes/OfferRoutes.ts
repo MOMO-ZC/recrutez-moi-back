@@ -258,10 +258,6 @@ router.get("/:id", authenticationMiddleware, async (request, response) => {
         .json(
           new ErrorResponse("Offer not found", new Error("Offer not found"))
         );
-    } else {
-      response
-        .status(500)
-        .json(new ErrorResponse("Internal server error", error));
     }
     return;
   }
