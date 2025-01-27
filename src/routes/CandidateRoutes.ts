@@ -46,10 +46,6 @@ router.get("/:id", authenticationMiddleware, async (request, response) => {
       response
         .status(401)
         .json(new ErrorResponse("Unauthorized access", error, error.stack));
-    } else {
-      response
-        .status(500)
-        .json(new ErrorResponse("Internal server error", error));
     }
     return;
   }
@@ -77,10 +73,6 @@ router.patch("/:id", authenticationMiddleware, async (request, response) => {
       response
         .status(401)
         .json(new ErrorResponse("Unauthorized access", error, error.stack));
-    } else {
-      response
-        .status(500)
-        .json(new ErrorResponse("Internal server error", error));
     }
     return;
   }
