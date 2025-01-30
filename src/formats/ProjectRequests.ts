@@ -7,17 +7,16 @@ export interface CreateProjectRequest {
 }
 
 export interface GetProjectByIdRequest {
-  // id_user: number; // Set by the authentication middleware
-  id: number;
+  id: number; // Set in the route parameters
 }
 
 export interface GetUserProjectsRequest {
-  id_user: number;
+  id_user: number; // Set by the authentication middleware
 }
 
 export interface UpdateProjectRequest {
   id_user: number; // Set by the authentication middleware
-  id: number;
+  id: number; // Set in the route parameters
   name?: string;
   description?: string;
   type?: string; // References project type ID
@@ -26,7 +25,7 @@ export interface UpdateProjectRequest {
 
 export interface DeleteProjectRequest {
   id_user: number; // Set by the authentication middleware
-  id: number;
+  id: number; // Set in the route parameters
 }
 
 export interface GetAllProjectTypesRequest {}

@@ -9,8 +9,10 @@ import { ErrorResponse } from "../formats/ErrorResponse";
 import authenticationMiddleware from "../middlewares/authentication";
 import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
 import {
+  deleteProject,
   getProjectById,
   getProjectsOfUser,
+  updateProject,
 } from "../controllers/ProjectController";
 
 const router = Router();
@@ -107,5 +109,44 @@ router.get("/:id/projects/:projectId", async (request, response) => {
 
   response.json(controllerResponse);
 });
+
+// Update a project
+router.patch(
+  "/:id/projects/:id_project",
+  authenticationMiddleware,
+  async (request, response) => {
+    if (parseInt(request.params.id) !== parseInt(request.params.userId)) {
+      response.status(401).send("Unauthorized access");
+      return;
+    }
+
+    const controllerResponse = await updateProject({
+      ...request.body,
+      id: parseInt(request.params.id_project),
+      id_user: parseInt(request.params.id),
+    });
+
+    response.json(controllerResponse);
+  }
+);
+
+// Delete a project
+router.delete(
+  "/:id/projects/:id_project",
+  authenticationMiddleware,
+  async (request, response) => {
+    if (parseInt(request.params.id) !== parseInt(request.params.userId)) {
+      response.status(401).send("Unauthorized access");
+      return;
+    }
+
+    const controllerResponse = await deleteProject({
+      id: parseInt(request.params.id_project),
+      id_user: parseInt(request.params.id),
+    });
+
+    response.json(controllerResponse);
+  }
+);
 
 export default router;
