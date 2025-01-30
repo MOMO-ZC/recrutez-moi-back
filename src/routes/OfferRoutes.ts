@@ -37,9 +37,10 @@ router.post("/", authenticationMiddleware, async (request, response) => {
 
     // Create the offer
     const controllerResponse = await AddOffer({
-      userId: companyUserId.company,
+      userId: companyUserId.user,
       ...request.body,
     });
+
     if (!controllerResponse) {
       response
         .status(401)

@@ -2,6 +2,7 @@ import { InferSelectModel, InferInsertModel, eq, and, sql } from "drizzle-orm";
 import {
   applicationsTable,
   candidateUsersTable,
+  companiesTable,
   companyUsersTable,
   educationTable,
   experiencesTable,
@@ -153,6 +154,7 @@ export default class OfferRepository implements IOfferRepository {
 
   async getById(id: number): Promise<
     Offer & {
+      company_name: string;
       skills: { id: number; name: string; type: string; category: string }[];
       education: { id: number; domain: string; diploma: string }[];
       experiences: { id: number; name: string }[];
@@ -160,7 +162,29 @@ export default class OfferRepository implements IOfferRepository {
     }
   > {
     const offer = (
-      await db.select().from(jobOffersTable).where(eq(jobOffersTable.id, id))
+      await db
+        .select({
+          id: jobOffersTable.id,
+          id_company: jobOffersTable.id_company,
+          title: jobOffersTable.title,
+          body: jobOffersTable.body,
+          address: jobOffersTable.address,
+          gps_location: jobOffersTable.gps_location,
+          min_salary: jobOffersTable.min_salary,
+          max_salary: jobOffersTable.max_salary,
+          location_type: jobOffersTable.location_type,
+          status: jobOffersTable.status,
+          image: jobOffersTable.image,
+          created_at: jobOffersTable.created_at,
+          modified_at: jobOffersTable.modified_at,
+          company_name: companiesTable.name,
+        })
+        .from(jobOffersTable)
+        .where(eq(jobOffersTable.id, id))
+        .innerJoin(
+          companiesTable,
+          eq(jobOffersTable.id_company, companiesTable.id)
+        )
     )[0];
 
     return {
@@ -283,6 +307,7 @@ export default class OfferRepository implements IOfferRepository {
 
   async getAllWithLiked(userId: number): Promise<
     (Offer & {
+      company_name: string;
       liked: boolean;
       skills: { id: number; name: string; type: string; category: string }[];
       education: { id: number; domain: string; diploma: string }[];
@@ -290,7 +315,28 @@ export default class OfferRepository implements IOfferRepository {
       languages: { id: number; name: string; level: string }[];
     })[]
   > {
-    const offers = await db.select().from(jobOffersTable);
+    const offers = await db
+      .select({
+        id: jobOffersTable.id,
+        id_company: jobOffersTable.id_company,
+        title: jobOffersTable.title,
+        body: jobOffersTable.body,
+        address: jobOffersTable.address,
+        gps_location: jobOffersTable.gps_location,
+        min_salary: jobOffersTable.min_salary,
+        max_salary: jobOffersTable.max_salary,
+        location_type: jobOffersTable.location_type,
+        status: jobOffersTable.status,
+        image: jobOffersTable.image,
+        created_at: jobOffersTable.created_at,
+        modified_at: jobOffersTable.modified_at,
+        company_name: companiesTable.name,
+      })
+      .from(jobOffersTable)
+      .innerJoin(
+        companiesTable,
+        eq(companiesTable.id, jobOffersTable.id_company)
+      );
 
     return await Promise.all(
       offers.map(async (offer) => ({
@@ -396,7 +442,9 @@ export default class OfferRepository implements IOfferRepository {
     return null;
   }
 
-  async getLiked(userId: number): Promise<Offer[]> {
+  async getLiked(
+    userId: number
+  ): Promise<(Offer & { company_name: string })[]> {
     return db
       .select({
         id: jobOffersTable.id,
@@ -412,11 +460,16 @@ export default class OfferRepository implements IOfferRepository {
         image: jobOffersTable.image,
         created_at: jobOffersTable.created_at,
         modified_at: jobOffersTable.modified_at,
+        company_name: companiesTable.name,
       })
       .from(usersLikedJobOffersTable)
       .innerJoin(
         jobOffersTable,
         eq(usersLikedJobOffersTable.id_job_offer, jobOffersTable.id)
+      )
+      .innerJoin(
+        companiesTable,
+        eq(companiesTable.id, jobOffersTable.id_company)
       )
       .where(eq(usersLikedJobOffersTable.id_user, userId));
   }
