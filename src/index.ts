@@ -5,6 +5,8 @@ import CompanyRoutes from "./routes/CompanyRoutes";
 import AuthenticationRoutes from "./routes/AuthenticationRoutes";
 import OfferRoutes from "./routes/OfferRoutes";
 import ApplicationRoutes from "./routes/ApplicationRoutes";
+import ProjectRoutes from "./routes/ProjectRoutes";
+import SkillRoutes from "./routes/SkillRoutes";
 import errorMiddleware from "./middlewares/errors";
 
 const app: Express = express();
@@ -22,6 +24,8 @@ app.use("/candidates", CandidateRoutes);
 app.use("/companies", CompanyRoutes);
 app.use("/offers", OfferRoutes);
 app.use("/applications", ApplicationRoutes);
+app.use("/projects", ProjectRoutes);
+app.use("/skills", SkillRoutes);
 
 app.use(errorMiddleware);
 

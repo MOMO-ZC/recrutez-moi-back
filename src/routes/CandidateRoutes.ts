@@ -8,6 +8,10 @@ import { UserNotFoundError } from "../exceptions/UserExceptions";
 import { ErrorResponse } from "../formats/ErrorResponse";
 import authenticationMiddleware from "../middlewares/authentication";
 import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
+import {
+  getProjectById,
+  getProjectsOfUser,
+} from "../controllers/ProjectController";
 
 const router = Router();
 
@@ -76,6 +80,32 @@ router.patch("/:id", authenticationMiddleware, async (request, response) => {
     }
     return;
   }
+});
+
+// Get user projects
+router.get("/:id/projects", async (request, response) => {
+  const id = parseInt(request.params.id);
+
+  const controllerResponse = await getProjectsOfUser({ id_user: id });
+
+  response.json(controllerResponse);
+});
+
+// Get single user project
+router.get("/:id/projects/:projectId", async (request, response) => {
+  const id = parseInt(request.params.id);
+  const projectId = parseInt(request.params.projectId);
+
+  const controllerResponse = await getProjectById({
+    id: projectId,
+  });
+
+  if (controllerResponse.id_user !== id) {
+    response.status(404).send("User doesn't own project with id " + projectId);
+    return;
+  }
+
+  response.json(controllerResponse);
 });
 
 export default router;
