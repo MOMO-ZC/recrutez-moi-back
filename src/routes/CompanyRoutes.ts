@@ -5,6 +5,7 @@ import { ErrorResponse } from "../formats/ErrorResponse";
 import { AboutCompany, UpdateCompany } from "../controllers/CompanyController";
 import authenticationMiddleware from "../middlewares/authentication";
 import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
+import { GetCompanyOffers } from "../controllers/OfferController";
 
 const router = Router();
 
@@ -45,9 +46,10 @@ router.patch("/:id", authenticationMiddleware, async (request, response) => {
   // TODO: Validate data
   const id = parseInt(request.params.id);
   const userId = parseInt(request.params.userId);
+  const companyLoginId = parseInt(request.params.companyId);
 
   try {
-    await UpdateCompany({ id, userId, ...request.body });
+    await UpdateCompany({ id, userId, companyLoginId, ...request.body });
 
     response.status(200).send();
   } catch (error) {
@@ -62,6 +64,15 @@ router.patch("/:id", authenticationMiddleware, async (request, response) => {
     }
     return;
   }
+});
+
+// Get all the company's offers
+router.get("/:id/offers", async (request, response) => {
+  const controllerResponse = await GetCompanyOffers({
+    id_company: parseInt(request.params.id),
+  });
+
+  response.json(controllerResponse);
 });
 
 export default router;

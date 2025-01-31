@@ -38,6 +38,10 @@ export interface GetOfferByIdRequest {
   id_user: number; // Set by the authentication middleware
 }
 
+export interface GetCompanyOffersRequest {
+  id_company: number; // Set in the route parameters
+}
+
 export interface GetAllOffersRequest {
   id_user: number; // Set by the authentication middleware
 }

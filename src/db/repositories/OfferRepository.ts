@@ -240,6 +240,96 @@ export default class OfferRepository implements IOfferRepository {
     };
   }
 
+  async getByCompany(id_company: number): Promise<
+    (Offer & {
+      company_name: string;
+      number_applicants: number;
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    })[]
+  > {
+    const offers = await db
+      .select({
+        id: jobOffersTable.id,
+        id_company: jobOffersTable.id_company,
+        title: jobOffersTable.title,
+        body: jobOffersTable.body,
+        address: jobOffersTable.address,
+        gps_location: jobOffersTable.gps_location,
+        min_salary: jobOffersTable.min_salary,
+        max_salary: jobOffersTable.max_salary,
+        location_type: jobOffersTable.location_type,
+        status: jobOffersTable.status,
+        image: jobOffersTable.image,
+        created_at: jobOffersTable.created_at,
+        modified_at: jobOffersTable.modified_at,
+        company_name: companiesTable.name,
+        number_applicants: sql<number>`(SELECT COUNT(*) FROM ${applicationsTable} WHERE ${applicationsTable.id_job_offer} = ${jobOffersTable.id})`,
+      })
+      .from(jobOffersTable)
+      .where(eq(jobOffersTable.id_company, id_company))
+      .innerJoin(
+        companiesTable,
+        eq(companiesTable.id, jobOffersTable.id_company)
+      );
+
+    return await Promise.all(
+      offers.map(async (offer) => ({
+        ...offer,
+        skills: await db
+          .select({
+            id: skillsTable.id,
+            name: skillsTable.name,
+            type: skillsTable.type,
+            category: skillsTable.category,
+          })
+          .from(skillsTable)
+          .innerJoin(
+            jobOfferSkillsTable,
+            eq(skillsTable.id, jobOfferSkillsTable.id_skill)
+          )
+          .where(eq(jobOfferSkillsTable.id_job_offer, offer.id)),
+        education: await db
+          .select({
+            id: educationTable.id,
+            domain: educationTable.domain,
+            diploma: educationTable.diploma,
+          })
+          .from(educationTable)
+          .innerJoin(
+            jobOfferEducationTable,
+            eq(educationTable.id, jobOfferEducationTable.id_education)
+          )
+          .where(eq(jobOfferEducationTable.id_job_offer, offer.id)),
+        experiences: await db
+          .select({
+            id: experiencesTable.id,
+            name: experiencesTable.name,
+          })
+          .from(experiencesTable)
+          .innerJoin(
+            jobOfferExperiencesTable,
+            eq(experiencesTable.id, jobOfferExperiencesTable.id_experience)
+          )
+          .where(eq(jobOfferExperiencesTable.id_job_offer, offer.id)),
+        languages: await db
+          .select({
+            id: languagesTable.id,
+            name: languagesTable.name,
+            level: jobOfferLanguagesTable.level,
+          })
+          .from(languagesTable)
+          .innerJoin(
+            jobOfferLanguagesTable,
+            eq(languagesTable.id, jobOfferLanguagesTable.id_language)
+          )
+          .where(eq(jobOfferLanguagesTable.id_job_offer, offer.id)),
+      }))
+    );
+  }
+
   async getAll(): Promise<
     (Offer & {
       skills: { id: number; name: string; type: string; category: string }[];
@@ -485,6 +575,8 @@ export default class OfferRepository implements IOfferRepository {
         )
       );
 
+    console.log(liked);
+
     return liked.length > 0;
   }
 
@@ -502,8 +594,10 @@ export default class OfferRepository implements IOfferRepository {
     await db
       .delete(usersLikedJobOffersTable)
       .where(
-        eq(usersLikedJobOffersTable.id_job_offer, offerId) &&
+        and(
+          eq(usersLikedJobOffersTable.id_job_offer, offerId),
           eq(usersLikedJobOffersTable.id_user, userId)
+        )
       );
     return null;
   }

@@ -19,6 +19,30 @@ export interface GetOfferByIdResponse
   languages: { id: number; name: string; level: string }[];
 }
 
+export interface GetCompanyOffersResponse {
+  offers: {
+    id: number;
+    id_company: number;
+    company_name: string;
+    title: string;
+    body: string;
+    min_salary: number;
+    max_salary: number;
+    location_type: string;
+    address: string;
+    gps_location: number[];
+    status: string;
+    image: string;
+    created_at: Date;
+    modified_at: Date;
+    number_applicants: number;
+    skills: { id: number; name: string; type: string; category: string }[];
+    education: { id: number; domain: string; diploma: string }[];
+    experiences: { id: number; name: string }[];
+    languages: { id: number; name: string; level: string }[];
+  }[];
+}
+
 export interface GetOffersResponse
   extends Array<
     InferSelectModel<typeof jobOffersTable> & {

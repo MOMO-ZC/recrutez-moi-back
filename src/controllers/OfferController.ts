@@ -6,6 +6,7 @@ import {
   AddOfferRequest,
   ApplyOfferRequest,
   GetAllOffersRequest,
+  GetCompanyOffersRequest,
   GetLikedOffersRequest,
   GetOfferByIdRequest,
   LikeOfferRequest,
@@ -16,6 +17,7 @@ import {
   AddOfferResponse,
   ApplyOfferResponse,
   GetApplicationsOfferResponse,
+  GetCompanyOffersResponse,
   GetLikedOffersResponse,
   GetOfferByIdResponse,
   GetOffersResponse,
@@ -131,6 +133,22 @@ export const GetAllOffers = async (
   request: GetAllOffersRequest
 ): Promise<GetOffersResponse> => {
   return await offerRepository.getAllWithLiked(request.id_user);
+};
+
+export const GetCompanyOffers = async (
+  request: GetCompanyOffersRequest
+): Promise<GetCompanyOffersResponse> => {
+  const companyOffers = await offerRepository.getByCompany(request.id_company);
+  const offers = companyOffers.map((offer) => ({
+    ...offer,
+    number_applicants: parseInt(offer.number_applicants.toString()),
+    address: offer.address ?? "",
+    gps_location: offer.gps_location ?? [],
+    image: offer.image ?? "",
+    created_at: new Date(offer.created_at),
+    modified_at: new Date(offer.modified_at),
+  }));
+  return { offers: offers };
 };
 
 export const GetLikedOffers = async (

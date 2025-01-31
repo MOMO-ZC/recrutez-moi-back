@@ -4,11 +4,15 @@ import { companiesTable, companyUsersTable, usersTable } from "../schema";
 import { db } from "..";
 import { createInsertSchema } from "drizzle-zod";
 
-type Company = InferSelectModel<typeof companyUsersTable>;
-type CompanyInsert = InferInsertModel<typeof companyUsersTable>;
+type Company = InferSelectModel<typeof companiesTable>;
+type CompanyInsert = InferInsertModel<typeof companiesTable>;
+type CompanyUser = InferSelectModel<typeof companyUsersTable>;
+type CompanyUserInsert = InferInsertModel<typeof companyUsersTable>;
 
 export default class CompanyRepository implements ICompanyRepository {
-  async add(company: Omit<CompanyInsert, "company">): Promise<Company | null> {
+  async add(
+    company: Omit<CompanyUserInsert, "company">
+  ): Promise<CompanyUser | null> {
     // Add company profile
     const companyProfile = (
       await db
@@ -32,6 +36,14 @@ export default class CompanyRepository implements ICompanyRepository {
 
   async findById(id: number): Promise<Company | null> {
     return (
+      await db.select().from(companiesTable).where(eq(companiesTable.id, id))
+    )[0];
+  }
+
+  async findByUserId(
+    id: number
+  ): Promise<{ company: number; name: string; user: number } | null> {
+    return (
       await db
         .select()
         .from(companyUsersTable)
@@ -39,17 +51,37 @@ export default class CompanyRepository implements ICompanyRepository {
     )[0];
   }
 
+  async findUser(
+    id_company: number
+  ): Promise<InferSelectModel<typeof usersTable>> {
+    const result = (
+      await db
+        .select({
+          id: usersTable.id,
+          email: usersTable.email,
+          password: usersTable.password,
+          role: usersTable.role,
+          created_at: usersTable.created_at,
+          modified_at: usersTable.modified_at,
+        })
+        .from(usersTable)
+        .innerJoin(companyUsersTable, eq(usersTable.id, companyUsersTable.user))
+        .where(eq(companyUsersTable.company, id_company))
+    )[0];
+    return result;
+  }
+
   async remove(id: number): Promise<null> {
     await db.delete(companyUsersTable).where(eq(companyUsersTable.user, id));
     return null;
   }
 
-  async update({
+  async updateFromUserID({
     user,
     company,
   }: {
     user: number;
-    company: Partial<Omit<Company, "user">>;
+    company: Partial<Omit<CompanyUser, "user">>;
   }): Promise<null> {
     await db.transaction(async (tx) => {
       // Update the modified_at date in the users table
@@ -68,12 +100,14 @@ export default class CompanyRepository implements ICompanyRepository {
   }
 
   async updateWithUser({
-    id,
+    id_company,
+    id_user,
     fullUser,
   }: {
-    id: number;
+    id_company: number;
+    id_user: number;
     fullUser: Partial<
-      Omit<Company, "user"> &
+      Omit<CompanyUser, "user"> &
         Partial<
           Omit<
             InferSelectModel<typeof usersTable>,
@@ -94,14 +128,14 @@ export default class CompanyRepository implements ICompanyRepository {
       await tx
         .update(usersTable)
         .set({ ...userUpdateData, modified_at: new Date() })
-        .where(eq(usersTable.id, id));
+        .where(eq(usersTable.id, id_user));
 
       // Update candidate_users table
       const candidate_user = (
         await tx
           .update(companyUsersTable)
           .set(candidateUpdateData)
-          .where(eq(companyUsersTable.user, id))
+          .where(eq(companyUsersTable.user, id_user))
           .returning()
       )[0];
 
