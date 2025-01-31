@@ -66,6 +66,21 @@ export default interface IOfferRepository {
   >;
 
   /**
+   * Retrieves all offers from the repository for a specific company
+   * @param id_company The id of the company to get offers for
+   */
+  getByCompany(id_company: number): Promise<
+    (Offer & {
+      company_name: string;
+      number_applicants: number;
+      skills: { id: number; name: string; type: string; category: string }[];
+      education: { id: number; domain: string; diploma: string }[];
+      experiences: { id: number; name: string }[];
+      languages: { id: number; name: string; level: string }[];
+    })[]
+  >;
+
+  /**
    * Retrieves all offers from the repository
    * @returns A list of all offers
    */

@@ -29,6 +29,7 @@ export const AboutApplication = async (
   if (company === null) {
     throw new Error("Company not found");
   }
+  const companyUser = await new CompanyRepository().findUser(company.id);
 
   // Check authorizations
   const user = await new UserRepository().findById(request.id_user);
@@ -40,7 +41,7 @@ export const AboutApplication = async (
     throw new Error("User not authorized to see this application");
   }
 
-  if (user.role === "company" && company.user !== user.id) {
+  if (user.role === "company" && companyUser.id !== user.id) {
     throw new Error("User not authorized to see this application");
   }
 
@@ -104,7 +105,9 @@ export const AcceptApplication = async (
     throw new Error("Company not found");
   }
 
-  if (company.user !== request.userId) {
+  const companyUser = await new CompanyRepository().findUser(company.id);
+
+  if (companyUser.id !== request.userId) {
     throw new Error("User not authorized to accept this application");
   }
 
@@ -138,7 +141,9 @@ export const RejectApplication = async (
     throw new Error("Company not found");
   }
 
-  if (company.user !== request.userId) {
+  const companyUser = await new CompanyRepository().findUser(company.id);
+
+  if (companyUser.id !== request.userId) {
     throw new Error("User not authorized to reject this application");
   }
 

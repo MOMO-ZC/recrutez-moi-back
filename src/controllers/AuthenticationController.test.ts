@@ -114,7 +114,12 @@ describe("AuthenticationController", () => {
         address: request.address,
         gps_location: [0, 0],
       });
-      expect(result).toEqual({ id: 1, role: "candidate", token: "mock-token" });
+      expect(result).toEqual({
+        id_user: 1,
+        id_candidate: 1,
+        role: "candidate",
+        token: "mock-token",
+      });
     });
 
     it("should throw UserCreationError if the user already exists", async () => {
@@ -215,7 +220,7 @@ describe("AuthenticationController", () => {
         modified_at: new Date(),
       };
       const createdCompany = {
-        id: 20,
+        company: 20,
         user: 10,
         name: request.name,
       };
@@ -250,7 +255,12 @@ describe("AuthenticationController", () => {
         user: createdUser.id,
         name: request.name,
       });
-      expect(result).toEqual({ id: 10, role: "company", token: "mock-token" });
+      expect(result).toEqual({
+        id_user: 10,
+        id_company: 20,
+        role: "company",
+        token: "mock-token",
+      });
     });
 
     // Other test cases...
@@ -337,7 +347,7 @@ describe("AuthenticationController", () => {
       modified_at: new Date(),
     };
     const createdCompany = {
-      id: 20,
+      company: 20,
       user: 10,
       name: request.name,
     };
@@ -372,7 +382,12 @@ describe("AuthenticationController", () => {
       user: createdUser.id,
       name: request.name,
     });
-    expect(result).toEqual({ id: 10, role: "company", token: "mock-token" });
+    expect(result).toEqual({
+      id_user: 10,
+      id_company: 20,
+      role: "company",
+      token: "mock-token",
+    });
   });
 });
 
@@ -406,7 +421,12 @@ describe("logIn", () => {
       request.password,
       user.password
     );
-    expect(result).toEqual({ id: 1, role: "candidate", token: "mock-token" });
+    expect(result).toEqual({
+      id_user: 1,
+      id_candidate: 1,
+      role: "candidate",
+      token: "mock-token",
+    });
   });
 
   it("should return null if the user is not found", async () => {

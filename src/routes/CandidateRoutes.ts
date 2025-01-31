@@ -64,7 +64,7 @@ router.patch("/:id", authenticationMiddleware, async (request, response) => {
 
   try {
     await UpdateCandidate({
-      id: id,
+      id: parseInt(id),
       userId: parseInt(request.params.userId),
       ...request.body,
     });

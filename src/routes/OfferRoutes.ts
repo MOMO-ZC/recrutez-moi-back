@@ -23,7 +23,7 @@ const router = Router();
 router.post("/", authenticationMiddleware, async (request, response) => {
   if (request.params.userRole === "company") {
     // Make sure that the offer is being created for the current company
-    const companyUserId = await new CompanyRepository().findById(
+    const companyUserId = await new CompanyRepository().findByUserId(
       parseInt(request.params.userId)
     );
     if (!companyUserId || companyUserId === null) {
@@ -37,9 +37,10 @@ router.post("/", authenticationMiddleware, async (request, response) => {
 
     // Create the offer
     const controllerResponse = await AddOffer({
-      userId: companyUserId.company,
+      userId: companyUserId.user,
       ...request.body,
     });
+
     if (!controllerResponse) {
       response
         .status(401)
@@ -70,7 +71,7 @@ router.patch("/:id", authenticationMiddleware, async (request, response) => {
   // Make sure that the user is a company
   if (request.params.userRole === "company") {
     // Make sure that the company owns the offer
-    const userCompanyId = await new CompanyRepository().findById(
+    const userCompanyId = await new CompanyRepository().findByUserId(
       parseInt(request.params.userId)
     );
     if (!userCompanyId || userCompanyId === null) {
@@ -157,7 +158,7 @@ router.delete("/:id", authenticationMiddleware, async (request, response) => {
   }
 
   // Make sure the company owns the offer
-  const userCompanyId = await new CompanyRepository().findById(
+  const userCompanyId = await new CompanyRepository().findByUserId(
     parseInt(request.params.userId)
   );
   if (!userCompanyId || userCompanyId === null) {
@@ -266,7 +267,9 @@ router.get("/:id", authenticationMiddleware, async (request, response) => {
 // Get all offers or only liked offers
 router.get("/", authenticationMiddleware, async (request, response) => {
   if (request.query.liked === "true") {
-    const controllerResponse = await GetLikedOffers({ id_user: 1 });
+    const controllerResponse = await GetLikedOffers({
+      id_user: parseInt(request.params.userId),
+    });
 
     response.json(controllerResponse);
   } else {
@@ -279,27 +282,33 @@ router.get("/", authenticationMiddleware, async (request, response) => {
 });
 
 // Like an offer
-router.post("/:id/like", async (request, response) => {
-  try {
-    const controllerResponse = await LikeOffer({
-      id_user: 1,
-      id_offer: parseInt(request.params.id),
-    });
-    response.json(controllerResponse);
-  } catch (error: unknown) {
-    if (error instanceof OfferNotFoundError) {
-      response
-        .status(404)
-        .json(
-          new ErrorResponse("Offer not found", new Error("Offer not found"))
-        );
-    } else if (error instanceof UserNotFoundError) {
-      response
-        .status(404)
-        .json(new ErrorResponse("User not found", new Error("User not found")));
+router.post(
+  "/:id/like",
+  authenticationMiddleware,
+  async (request, response) => {
+    try {
+      const controllerResponse = await LikeOffer({
+        id_user: parseInt(request.params.userId),
+        id_offer: parseInt(request.params.id),
+      });
+      response.json(controllerResponse);
+    } catch (error: unknown) {
+      if (error instanceof OfferNotFoundError) {
+        response
+          .status(404)
+          .json(
+            new ErrorResponse("Offer not found", new Error("Offer not found"))
+          );
+      } else if (error instanceof UserNotFoundError) {
+        response
+          .status(404)
+          .json(
+            new ErrorResponse("User not found", new Error("User not found"))
+          );
+      }
     }
   }
-});
+);
 
 // Unlike an offer
 router.post(

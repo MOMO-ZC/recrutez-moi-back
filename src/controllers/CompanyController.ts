@@ -17,13 +17,15 @@ export const AboutCompany = async (
   const company = await companyRepository.findById(request.id);
 
   if (!company) {
-    throw new UserNotFoundError();
+    // FIXME: Change to a custom error implementation
+    throw new Error("Company not found");
   }
 
   return {
-    id: company.user,
-    company_id: company.company,
+    id: company.id,
     name: company.name,
+    created_at: new Date(company.created_at),
+    modified_at: new Date(company.modified_at),
   };
 };
 
@@ -38,24 +40,24 @@ export const UpdateCompany = async (
   };
 
   // Check that the user is updating themselves
-  if (request.userId !== id) {
+  if (request.companyLoginId !== id) {
     throw new UnauthorizedAccessError();
   }
 
   // Check if the user exists
   const company = await companyRepository.findById(id);
   if (!company) {
-    throw new UserNotFoundError();
+    throw new Error("Company not found");
   }
 
   // Check if the password is being updated
   if (updateData.password) {
     updateData.password = await passwordProvider.hash(updateData.password);
   }
-
   // Update the candidate and its associated user
   await companyRepository.updateWithUser({
-    id: id,
+    id_company: id,
+    id_user: request.userId,
     fullUser: updateData,
   });
 

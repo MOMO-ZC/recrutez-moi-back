@@ -1,8 +1,11 @@
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { companyUsersTable, usersTable } from "../schema";
+import { companiesTable, companyUsersTable, usersTable } from "../schema";
 
-type Company = InferSelectModel<typeof companyUsersTable>;
-type CompanyInsert = InferInsertModel<typeof companyUsersTable>;
+type Company = InferSelectModel<typeof companiesTable>;
+type CompanyInsert = InferInsertModel<typeof companiesTable>;
+
+type CompanyUser = InferSelectModel<typeof companyUsersTable>;
+type CompanyUserInsert = InferInsertModel<typeof companyUsersTable>;
 
 /**
  * Interface for Company Repository
@@ -12,13 +15,27 @@ export default interface ICompanyRepository {
    * Add a company to the database.
    * @param company The company to add to the database
    */
-  add(company: Omit<CompanyInsert, "company">): Promise<Company | null>;
+  add(company: Omit<CompanyUserInsert, "company">): Promise<CompanyUser | null>;
 
   /**
-   * Find a company by the ID of their user.
+   * Find a company by its ID.
    * @param id The ID of the company to find
    */
   findById(id: number): Promise<Company | null>;
+
+  /**
+   * Find a company by the ID of their user.
+   * @param id The ID of the user associated with the company to find
+   */
+  findByUserId(id: number): Promise<CompanyUser | null>;
+
+  /**
+   * Retrieves the user associated with a company
+   * @param id_company The ID of the company
+   */
+  findUser(
+    id_company: number
+  ): Promise<InferSelectModel<typeof usersTable> | null>;
 
   /**
    * Remove a company from the database.
@@ -31,12 +48,12 @@ export default interface ICompanyRepository {
    * @param user The ID of the user associated with the company
    * @param company The fields to update on the company
    */
-  update({
+  updateFromUserID({
     user,
     company,
   }: {
     user: number;
-    company: Partial<Omit<Company, "user">>;
+    company: Partial<Omit<CompanyUser, "user">>;
   }): Promise<null>;
 
   /**
@@ -45,12 +62,14 @@ export default interface ICompanyRepository {
    * @param fullUser The full user object to update with
    */
   updateWithUser({
-    id,
+    id_company,
+    id_user,
     fullUser,
   }: {
-    id: number;
+    id_company: number;
+    id_user: number;
     fullUser: Partial<
-      Omit<Company, "user"> &
+      Omit<CompanyUser, "user"> &
         Partial<
           Omit<
             InferSelectModel<typeof usersTable>,

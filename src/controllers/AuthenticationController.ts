@@ -12,7 +12,6 @@ import { LogInResponse, RegisterResponse } from "../formats/UserResponses";
 import CandidateRepository from "../db/repositories/CandidateRepository";
 import CompanyRepository from "../db/repositories/CompanyRepository";
 import GeocodingProvider from "../providers/GeocodingProvider";
-import { sql } from "drizzle-orm";
 
 const userRepository = new UserRepository();
 const candidateRepository = new CandidateRepository();
@@ -80,10 +79,15 @@ export const registerCandidate = async (
 
   // Return a user token to keep them logged in
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: newUser.id, role: "candidate" });
+  const token = tokenProvider.sign({
+    id_user: newUser.id,
+    id_candidate: newUser.id,
+    role: "candidate",
+  });
 
   const response: RegisterResponse = {
-    id: newUser.id,
+    id_user: newUser.id,
+    id_candidate: newUser.id,
     role: "candidate",
     token: token,
   };
@@ -141,10 +145,15 @@ export const registerCompany = async (
 
   // Return a user token to keep them logged in
   const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: newUser.id, role: "company" });
+  const token = tokenProvider.sign({
+    id_user: newUser.id,
+    id_company: newCompany.company,
+    role: "company",
+  });
 
   const response: RegisterResponse = {
-    id: newUser.id,
+    id_user: newUser.id,
+    id_company: newCompany.company,
     role: "company",
     token: token,
   };
@@ -165,13 +174,41 @@ export const logIn = async (
     return null;
   }
 
-  const tokenProvider = new TokenProvider();
-  const token = tokenProvider.sign({ id: user.id, role: user.role });
-
-  const response: LogInResponse = {
-    id: user.id,
+  let response: {
+    id_user: number;
+    role: string;
+    token?: string;
+    id_candidate?: number;
+    id_company?: number;
+  } = {
+    id_user: user.id,
     role: user.role,
-    token: token,
   };
-  return response;
+
+  const tokenProvider = new TokenProvider();
+
+  // Check the role of the user and get the corresponding candidate or company
+  if (user.role === "candidate") {
+    const token = tokenProvider.sign({
+      id_user: user.id,
+      id_candidate: user.id,
+      role: user.role,
+    });
+    response = { ...response, id_candidate: user.id, token: token };
+  } else if (user.role === "company") {
+    // Get the company
+    const company = await companyRepository.findByUserId(user.id);
+    if (!company) {
+      throw new Error("Company not found");
+    }
+
+    const token = tokenProvider.sign({
+      id_user: user.id,
+      id_company: company.company,
+      role: user.role,
+    });
+    response = { ...response, id_company: company.company, token: token };
+  }
+
+  return response as LogInResponse;
 };

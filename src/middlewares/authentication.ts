@@ -25,8 +25,10 @@ const authenticationMiddleware = (
           .json(new ErrorResponse("Invalid token", new Error("Invalid token")));
       } else {
         const tokenInfo = tokenProvider.decode(token);
-        request.params.userId = tokenInfo.id;
+        request.params.userId = tokenInfo.id_user;
         request.params.userRole = tokenInfo.role;
+        request.params.candidateId = tokenInfo.id_candidate;
+        request.params.companyId = tokenInfo.id_company;
 
         next();
       }
