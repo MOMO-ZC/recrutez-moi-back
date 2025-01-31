@@ -4,9 +4,9 @@ import {
   candidateUsersTable,
   companiesTable,
   companyUsersTable,
-  educationTable,
+  educationsTable,
   experiencesTable,
-  jobOfferEducationTable,
+  jobOfferEducationsTable,
   jobOfferExperiencesTable,
   jobOfferLanguagesTable,
   jobOfferSkillsTable,
@@ -107,9 +107,9 @@ export default class OfferRepository implements IOfferRepository {
     // Update education
     if (education && education.length > 0) {
       await db
-        .delete(jobOfferEducationTable)
-        .where(eq(jobOfferEducationTable.id_job_offer, id));
-      await db.insert(jobOfferEducationTable).values(
+        .delete(jobOfferEducationsTable)
+        .where(eq(jobOfferEducationsTable.id_job_offer, id));
+      await db.insert(jobOfferEducationsTable).values(
         education.map((id_education) => ({
           id_job_offer: id,
           id_education: id_education,
@@ -204,16 +204,16 @@ export default class OfferRepository implements IOfferRepository {
         .where(eq(jobOfferSkillsTable.id_job_offer, id)),
       education: await db
         .select({
-          id: educationTable.id,
-          domain: educationTable.domain,
-          diploma: educationTable.diploma,
+          id: educationsTable.id,
+          domain: educationsTable.domain,
+          diploma: educationsTable.diploma,
         })
-        .from(educationTable)
+        .from(educationsTable)
         .innerJoin(
-          jobOfferEducationTable,
-          eq(educationTable.id, jobOfferEducationTable.id_education)
+          jobOfferEducationsTable,
+          eq(educationsTable.id, jobOfferEducationsTable.id_education)
         )
-        .where(eq(jobOfferEducationTable.id_job_offer, id)),
+        .where(eq(jobOfferEducationsTable.id_job_offer, id)),
       experiences: await db
         .select({
           id: experiencesTable.id,
@@ -293,16 +293,16 @@ export default class OfferRepository implements IOfferRepository {
           .where(eq(jobOfferSkillsTable.id_job_offer, offer.id)),
         education: await db
           .select({
-            id: educationTable.id,
-            domain: educationTable.domain,
-            diploma: educationTable.diploma,
+            id: educationsTable.id,
+            domain: educationsTable.domain,
+            diploma: educationsTable.diploma,
           })
-          .from(educationTable)
+          .from(educationsTable)
           .innerJoin(
-            jobOfferEducationTable,
-            eq(educationTable.id, jobOfferEducationTable.id_education)
+            jobOfferEducationsTable,
+            eq(educationsTable.id, jobOfferEducationsTable.id_education)
           )
-          .where(eq(jobOfferEducationTable.id_job_offer, offer.id)),
+          .where(eq(jobOfferEducationsTable.id_job_offer, offer.id)),
         experiences: await db
           .select({
             id: experiencesTable.id,
@@ -358,16 +358,16 @@ export default class OfferRepository implements IOfferRepository {
           .where(eq(jobOfferSkillsTable.id_job_offer, offer.id)),
         education: await db
           .select({
-            id: educationTable.id,
-            domain: educationTable.domain,
-            diploma: educationTable.diploma,
+            id: educationsTable.id,
+            domain: educationsTable.domain,
+            diploma: educationsTable.diploma,
           })
-          .from(educationTable)
+          .from(educationsTable)
           .innerJoin(
-            jobOfferEducationTable,
-            eq(educationTable.id, jobOfferEducationTable.id_education)
+            jobOfferEducationsTable,
+            eq(educationsTable.id, jobOfferEducationsTable.id_education)
           )
-          .where(eq(jobOfferEducationTable.id_job_offer, offer.id)),
+          .where(eq(jobOfferEducationsTable.id_job_offer, offer.id)),
         experiences: await db
           .select({
             id: experiencesTable.id,
@@ -447,16 +447,16 @@ export default class OfferRepository implements IOfferRepository {
           .where(eq(jobOfferSkillsTable.id_job_offer, offer.id)),
         education: await db
           .select({
-            id: educationTable.id,
-            domain: educationTable.domain,
-            diploma: educationTable.diploma,
+            id: educationsTable.id,
+            domain: educationsTable.domain,
+            diploma: educationsTable.diploma,
           })
-          .from(educationTable)
+          .from(educationsTable)
           .innerJoin(
-            jobOfferEducationTable,
-            eq(educationTable.id, jobOfferEducationTable.id_education)
+            jobOfferEducationsTable,
+            eq(educationsTable.id, jobOfferEducationsTable.id_education)
           )
-          .where(eq(jobOfferEducationTable.id_job_offer, offer.id)),
+          .where(eq(jobOfferEducationsTable.id_job_offer, offer.id)),
         experiences: await db
           .select({
             id: experiencesTable.id,
@@ -496,7 +496,7 @@ export default class OfferRepository implements IOfferRepository {
   }
 
   async addEducation(offerId: number, education: number[]): Promise<null> {
-    await db.insert(jobOfferEducationTable).values(
+    await db.insert(jobOfferEducationsTable).values(
       education.map((id_education) => ({
         id_offer: offerId,
         id_education: id_education,
