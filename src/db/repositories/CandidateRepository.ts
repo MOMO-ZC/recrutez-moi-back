@@ -1,6 +1,11 @@
-import { InferInsertModel, InferSelectModel, eq } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, and, eq } from "drizzle-orm";
 import ICandidateRepository from "./ICandidateRepository";
-import { candidateUsersTable, usersTable } from "../schema";
+import {
+  candidateUsersTable,
+  educationsTable,
+  userEducationsTable,
+  usersTable,
+} from "../schema";
 import { db } from "..";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -99,5 +104,166 @@ export default class CandidateRepository implements ICandidateRepository {
         .where(eq(candidateUsersTable.user, id));
     });
     return null;
+  }
+
+  async addEducation(
+    id_candidate: number,
+    id_education: number,
+    school: string,
+    start: Date,
+    end: Date
+  ): Promise<{
+    education: {
+      id: number;
+      domain: string;
+      diploma: string;
+    };
+    id_user: number;
+    school: string;
+    start: Date;
+    end: Date;
+    created_at: Date;
+    modified_at: Date;
+  }> {
+    const newUserEducation = await db
+      .insert(userEducationsTable)
+      .values({
+        id_education: id_education,
+        id_user: id_candidate,
+        school: school,
+        start: start.toISOString(),
+        end: end.toISOString(),
+        created_at: new Date().toISOString(),
+        modified_at: new Date().toISOString(),
+      })
+      .returning();
+
+    // Get information about the education
+    const education = await db
+      .select()
+      .from(educationsTable)
+      .where(eq(educationsTable.id, id_education));
+
+    return {
+      education: education[0],
+      id_user: newUserEducation[0].id_user as number,
+      school: newUserEducation[0].school,
+      start: new Date(newUserEducation[0].start!),
+      end: new Date(newUserEducation[0].end!),
+      created_at: new Date(newUserEducation[0].created_at),
+      modified_at: new Date(newUserEducation[0].modified_at),
+    };
+  }
+
+  async getCandidateEducations(id_candidate: number): Promise<{
+    candidate_educations: {
+      education: {
+        id: number;
+        domain: string;
+        diploma: string;
+      };
+      school: string;
+      start: Date;
+      end: Date;
+      created_at: Date;
+      modified_at: Date;
+    }[];
+  }> {
+    return {
+      candidate_educations: (
+        await db
+          .select({
+            id: educationsTable.id,
+            domain: educationsTable.domain,
+            diploma: educationsTable.diploma,
+            school: userEducationsTable.school,
+            start: userEducationsTable.start,
+            end: userEducationsTable.end,
+            created_at: userEducationsTable.created_at,
+            modified_at: userEducationsTable.modified_at,
+          })
+          .from(userEducationsTable)
+          .fullJoin(
+            educationsTable,
+            eq(userEducationsTable.id_education, educationsTable.id)
+          )
+          .where(
+            and(
+              eq(userEducationsTable.id_user, id_candidate),
+              eq(userEducationsTable.id_education, educationsTable.id)
+            )
+          )
+      ).map((education) => ({
+        education: {
+          id: education.id!,
+          domain: education.domain!,
+          diploma: education.diploma!,
+        },
+        school: education.school!,
+        start: new Date(education.start!),
+        end: new Date(education.end!),
+        created_at: new Date(education.created_at!),
+        modified_at: new Date(education.modified_at!),
+      })),
+    };
+  }
+
+  async educationExists(
+    id_candidate: number,
+    id_education: number
+  ): Promise<boolean> {
+    return (
+      (
+        await db
+          .select()
+          .from(userEducationsTable)
+          .where(
+            and(
+              eq(userEducationsTable.id_user, id_candidate),
+              eq(userEducationsTable.id_education, id_education)
+            )
+          )
+      ).length > 0
+    );
+  }
+
+  async updateEducation(
+    id_candidate: number,
+    id_education: number,
+    school?: string,
+    start?: Date,
+    end?: Date
+  ): Promise<void> {
+    const updateData: Partial<InferInsertModel<typeof userEducationsTable>> = {
+      school: school,
+      start: start?.toISOString(),
+      end: end?.toISOString(),
+      created_at: undefined,
+      modified_at: new Date().toISOString(),
+    };
+
+    await db
+      .update(userEducationsTable)
+      .set(updateData)
+      .where(
+        and(
+          eq(userEducationsTable.id_user, id_candidate),
+          eq(userEducationsTable.id_education, id_education)
+        )
+      );
+  }
+
+  async DeleteEducation(
+    id_candidate: number,
+    id_education: number
+  ): Promise<void> {
+    await db
+      .delete(userEducationsTable)
+      .where(
+        and(
+          eq(userEducationsTable.id_user, id_candidate),
+          eq(userEducationsTable.id_education, id_education)
+        )
+      );
   }
 }

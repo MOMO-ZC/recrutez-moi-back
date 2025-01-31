@@ -65,4 +65,79 @@ export default interface ICandidateRepository {
         >
     >;
   }): Promise<null>;
+
+  /**
+   * Add an education to a candidate
+   * @param id_candidate The ID of the candidate
+   * @param id_eduaction The ID of the education
+   * @param
+   */
+  addEducation(
+    id_candidate: number,
+    id_education: number,
+    school: string,
+    start: Date,
+    end: Date
+  ): Promise<{
+    education: {
+      id: number;
+      domain: string;
+      diploma: string;
+    };
+    id_user: number;
+    school: string;
+    start: Date;
+    end: Date;
+    created_at: Date;
+    modified_at: Date;
+  }>;
+
+  /**
+   * Retrieves the list of a candidate's educations
+   * @param id_candidate The ID of the candidate
+   */
+  getCandidateEducations(id_candidate: number): Promise<{
+    candidate_educations: {
+      education: {
+        id: number;
+        domain: string;
+        diploma: string;
+      };
+      school: string;
+      start: Date;
+      end: Date;
+      created_at: Date;
+      modified_at: Date;
+    }[];
+  }>;
+
+  /**
+   * Check if an education has already been linked to the profile of a candidate
+   * @param id_candidate The ID of the candidate
+   * @param id_education The Id of the education
+   */
+  educationExists(id_candidate: number, id_education: number): Promise<boolean>;
+
+  /**
+   * Update an education
+   * @param id_candidate The ID of the candidate
+   * @param id_education The ID of the education
+   * @param school The new school value
+   * @param start The new start date
+   * @param end The new end date
+   */
+  updateEducation(
+    id_candidate: number,
+    id_education: number,
+    school?: string,
+    start?: Date,
+    end?: Date
+  ): Promise<void>;
+
+  /**
+   * Delete an education
+   * @param id_candidate The ID of the candidate
+   * @param id_education The ID of the education
+   */
+  DeleteEducation(id_candidate: number, id_education: number): Promise<void>;
 }
