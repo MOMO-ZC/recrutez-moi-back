@@ -89,16 +89,12 @@ export const UpdateOffer = async (
   let requestData: UpdateOfferRequest & { gps_location?: [number, number] } = {
     ...request,
   };
-  console.log(requestData);
-  console.log(requestData.address);
-  console.log(requestData.address ? "yes" : "no");
   if (requestData.address) {
     // Get the gps coordinates from the address
     const geocodingProvider = new GeocodingProvider();
     const gpsLocationResponse = await geocodingProvider.geocode(
       requestData.address
     );
-    console.log("OK", gpsLocationResponse);
     requestData.gps_location = [
       gpsLocationResponse.lon,
       gpsLocationResponse.lat,

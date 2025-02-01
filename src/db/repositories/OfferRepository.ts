@@ -83,7 +83,6 @@ export default class OfferRepository implements IOfferRepository {
     const { id, skills, education, experiences, languages, ...updateFields } =
       offer;
 
-    console.log("updateFields", updateFields);
     const updatedOffer = (
       await db
         .update(jobOffersTable)
@@ -574,8 +573,6 @@ export default class OfferRepository implements IOfferRepository {
           eq(usersLikedJobOffersTable.id_user, userId)
         )
       );
-
-    console.log(liked);
 
     return liked.length > 0;
   }

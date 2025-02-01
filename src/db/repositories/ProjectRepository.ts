@@ -47,7 +47,7 @@ export default class ProjectRepository implements IProjectRepository {
       await db.insert(projectsTable).values(projectInsert).returning()
     )[0];
 
-    if (project.skills.length > 0)
+    if (project.skills?.length > 0)
       await db.insert(projectsSkillsTable).values(
         project.skills.map((skill) => ({
           id_project: projectResult.id,

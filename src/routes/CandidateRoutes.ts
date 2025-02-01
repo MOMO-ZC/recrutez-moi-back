@@ -153,7 +153,7 @@ router.delete(
   }
 );
 
-// Add education (already existing)
+// Add education
 router.post(
   "/:id/educations",
   authenticationMiddleware,
@@ -166,6 +166,8 @@ router.post(
 
     // Check if we are trying to create a new education
     if (request.body.id_education === undefined) {
+      // TODO: Check if the education already exists
+
       // Create the education
       const createEducationControllerResponse = await CreateEducation({
         domain: request.body.domain,
@@ -179,8 +181,8 @@ router.post(
       id_candidate: parseInt(request.params.id),
       id_education: parseInt(request.body.id_education),
       school: request.body.school,
-      start: request.body.start,
-      end: request.body.end,
+      start: new Date(request.body.start),
+      end: new Date(request.body.end),
     });
 
     response.json(controllerResponse);
