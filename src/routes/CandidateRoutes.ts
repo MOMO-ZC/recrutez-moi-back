@@ -2,6 +2,9 @@ import { Router } from "express";
 import { registerCandidate } from "../controllers/AuthenticationController";
 import {
   AboutCandidate,
+  AddCandidateEducation,
+  DeleteCandidateEducation,
+  GetCandidateEducations,
   UpdateCandidate,
 } from "../controllers/CandidateController";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
@@ -14,6 +17,7 @@ import {
   getProjectsOfUser,
   updateProject,
 } from "../controllers/ProjectController";
+import { CreateEducation } from "../controllers/EducationController";
 
 const router = Router();
 
@@ -148,5 +152,70 @@ router.delete(
     response.json(controllerResponse);
   }
 );
+
+// Add education
+router.post(
+  "/:id/educations",
+  authenticationMiddleware,
+  async (request, response) => {
+    // Check authorizations
+    if (parseInt(request.params.id) !== parseInt(request.params.userId)) {
+      response.status(401).send("Unauthorized access");
+      return;
+    }
+
+    // Check if we are trying to create a new education
+    if (request.body.id_education === undefined) {
+      // TODO: Check if the education already exists
+
+      // Create the education
+      const createEducationControllerResponse = await CreateEducation({
+        domain: request.body.domain,
+        diploma: request.body.diploma,
+      });
+
+      request.body.id_education = createEducationControllerResponse.id;
+    }
+
+    const controllerResponse = await AddCandidateEducation({
+      id_candidate: parseInt(request.params.id),
+      id_education: parseInt(request.body.id_education),
+      school: request.body.school,
+      start: new Date(request.body.start),
+      end: new Date(request.body.end),
+    });
+
+    response.json(controllerResponse);
+  }
+);
+
+// Remove education
+router.delete(
+  "/:id/educations/:id_education",
+  authenticationMiddleware,
+  async (request, response) => {
+    // Check authorizations
+    if (parseInt(request.params.id) !== parseInt(request.params.userId)) {
+      response.status(401).send("Unauthorized access");
+      return;
+    }
+
+    const controllerResponse = await DeleteCandidateEducation({
+      id_candidate: parseInt(request.params.id),
+      id_education: parseInt(request.params.id_education),
+    });
+
+    response.status(200).send();
+  }
+);
+
+// Get candidate educations
+router.get("/:id/educations", async (request, response) => {
+  const controllerResponse = await GetCandidateEducations({
+    id_candidate: parseInt(request.params.id),
+  });
+
+  response.json(controllerResponse);
+});
 
 export default router;

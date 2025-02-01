@@ -18,3 +18,31 @@ export interface UpdateCandidateRequest
   id: number;
   userId: number; // Set by the authentication middleware | The id of the user making the request. Can only be a candidate
 }
+
+export interface AddCandidateExistingEducationRequest {
+  // id_user: number; // Set by the authentication middleware | The id of the user making the request. Can only be a candidate
+  id_candidate: number;
+  id_education: number;
+  school: string;
+  start: Date;
+  end: Date;
+}
+
+export interface AddCandidateNewEducationRequest {
+  // id_user: number; // Set by the authentication middleware | The id of the user making the request. Can only be a candidate
+  id_candidate: number;
+  school: string;
+  diploma: string;
+  domain: string;
+  start: Date;
+  end: Date;
+}
+
+export interface GetCandidateEducationsRequest {
+  id_candidate: number; // Set in the route parameters
+}
+
+export interface DeleteCandidateEducationRequest {
+  id_candidate: number;
+  id_education: number;
+}

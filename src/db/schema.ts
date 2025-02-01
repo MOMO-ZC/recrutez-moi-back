@@ -131,18 +131,18 @@ export const projectsSkillsTable = pgTable(
   }
 );
 
-/* EDUCATION */
-export const educationTable = pgTable("education", {
+/* EDUCATIONS */
+export const educationsTable = pgTable("educations", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   domain: varchar({ length: 255 }).notNull(),
   diploma: varchar({ length: 255 }).notNull(),
 });
 
-/* USER EDUCATION */
-export const userEducationTable = pgTable(
-  "user_education",
+/* USER EDUCATIONS */
+export const userEducationsTable = pgTable(
+  "user_educations",
   {
-    id_education: integer().references(() => educationTable.id),
+    id_education: integer().references(() => educationsTable.id),
     id_user: integer().references(() => usersTable.id),
     school: varchar({ length: 255 }).notNull(),
     start: date(),
@@ -245,11 +245,11 @@ export const jobOfferSkillsTable = pgTable(
   }
 );
 
-/* JOB_OFFER_EDUCATION */
-export const jobOfferEducationTable = pgTable(
-  "job_offer_education",
+/* JOB_OFFER_EDUCATIONS */
+export const jobOfferEducationsTable = pgTable(
+  "job_offer_educations",
   {
-    id_education: integer().references(() => educationTable.id),
+    id_education: integer().references(() => educationsTable.id),
     id_job_offer: integer().references(() => jobOffersTable.id),
   },
   (table) => {

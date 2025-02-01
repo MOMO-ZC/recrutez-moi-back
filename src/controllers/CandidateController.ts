@@ -2,12 +2,21 @@ import CandidateRepository from "../db/repositories/CandidateRepository";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
 import {
   AboutCandidateRequest,
+  AddCandidateExistingEducationRequest,
+  AddCandidateNewEducationRequest,
+  DeleteCandidateEducationRequest,
+  GetCandidateEducationsRequest,
   UpdateCandidateRequest,
 } from "../formats/CandidateRequests";
-import { AboutCandidateResponse } from "../formats/CandidateResponses";
+import {
+  AboutCandidateResponse,
+  GetCandidateEducationResponse,
+  GetCandidateEducationsResponse,
+} from "../formats/CandidateResponses";
 import GeocodingProvider from "../providers/GeocodingProvider";
 import PasswordProvider from "../providers/PasswordProvider";
 import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
+import EducationRepository from "../db/repositories/EducationRepository";
 
 const passwordProvider = new PasswordProvider();
 const candidateRepository = new CandidateRepository();
@@ -84,4 +93,97 @@ export const UpdateCandidate = async (
   });
 
   return null;
+};
+
+export const AddCandidateEducation = async (
+  request:
+    | AddCandidateExistingEducationRequest
+    | AddCandidateNewEducationRequest
+): Promise<GetCandidateEducationResponse> => {
+  // Check if the user exists
+  const candidate = await candidateRepository.findById(request.id_candidate);
+  if (!candidate) {
+    throw new UserNotFoundError();
+  }
+
+  if ("id_education" in request) {
+    // Add an existing education
+
+    // Check that the user doesn't already have the education
+    if (
+      await candidateRepository.educationExists(
+        request.id_candidate,
+        request.id_education
+      )
+    ) {
+      throw new Error("Education already exists for this candidate");
+    }
+    const result = await candidateRepository.addEducation(
+      request.id_candidate,
+      request.id_education,
+      request.school,
+      request.start,
+      request.end
+    );
+    return {
+      education: result.education,
+      school: result.school,
+      start: result.start,
+      end: result.end,
+      created_at: result.created_at,
+      modified_at: result.modified_at,
+    };
+  } else {
+    // Create a new education
+    const education = await new EducationRepository().create(
+      request.domain,
+      request.diploma
+    );
+
+    // Add the education to the candidate
+    const result = await candidateRepository.addEducation(
+      request.id_candidate,
+      education.id,
+      request.school,
+      request.start,
+      request.end
+    );
+
+    return {
+      education: result.education,
+      school: result.school,
+      start: result.start,
+      end: result.end,
+      created_at: result.created_at,
+      modified_at: result.modified_at,
+    };
+  }
+};
+
+export const GetCandidateEducations = async (
+  request: GetCandidateEducationsRequest
+): Promise<GetCandidateEducationsResponse> => {
+  const educations = await candidateRepository.getCandidateEducations(
+    request.id_candidate
+  );
+
+  return {
+    candidate_educations: educations.candidate_educations.map((education) => ({
+      education: education.education,
+      school: education.school,
+      start: education.start,
+      end: education.end,
+      created_at: education.created_at,
+      modified_at: education.modified_at,
+    })),
+  };
+};
+
+export const DeleteCandidateEducation = async (
+  request: DeleteCandidateEducationRequest
+): Promise<void> => {
+  await candidateRepository.DeleteEducation(
+    request.id_candidate,
+    request.id_education
+  );
 };

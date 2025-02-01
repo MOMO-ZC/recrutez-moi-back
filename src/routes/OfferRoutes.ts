@@ -19,14 +19,14 @@ import { UserNotFoundError } from "../exceptions/UserExceptions";
 import { db } from "../db";
 import {
   candidateUsersTable,
-  educationTable,
+  educationsTable,
   experienceSkillsTable,
   experiencesTable,
   languagesTable,
   projectsSkillsTable,
   projectsTable,
   skillsTable,
-  userEducationTable,
+  userEducationsTable,
   userExperiencesTable,
   usersLanguagesTable,
 } from "../db/schema";
@@ -49,9 +49,6 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
   )[0];
 
   // TODO: Check that the user has an address
-  // const userGPSAddress = new GeocodingProvider().geocode(
-  //   candidateAttributeSelect.address!
-  // );
   const userGPSAddress = candidateAttributeSelect.gps_location!.reverse();
 
   // Get the user's languages
@@ -119,11 +116,11 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
   // Sum the number of year studies for the candidate
   const userEducation = await db
     .select()
-    .from(userEducationTable)
-    .where(eq(userEducationTable.id_user, parseInt(request.params.userId)))
+    .from(userEducationsTable)
+    .where(eq(userEducationsTable.id_user, parseInt(request.params.userId)))
     .innerJoin(
-      educationTable,
-      eq(educationTable.id, userEducationTable.id_education)
+      educationsTable,
+      eq(educationsTable.id, userEducationsTable.id_education)
     );
 
   const convertLanguageLevelToNumber = (level: string): number => {
@@ -169,7 +166,7 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
   const candidate_attribute = {
     location: userGPSAddress,
     diploma: userEducation.reduce((acc: number, education) => {
-      const n_years = convertDiplomaToYears(education.education.diploma);
+      const n_years = convertDiplomaToYears(education.educations.diploma);
       return acc + n_years;
     }, 1),
     seniority: candidateAttributeSelect.lookingForExperience ?? 1, // FIXME: Add a way to insert a value for this when creating / updating a candidate
@@ -236,6 +233,7 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
     body: JSON.stringify(llmRequest),
   });
 
+  // Debug:
   // console.log(llmRequest);
   // response.json(llmRequest);
   response.json(await llmResponse.json());
