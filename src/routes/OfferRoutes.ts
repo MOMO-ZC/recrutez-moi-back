@@ -52,7 +52,7 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
   // const userGPSAddress = new GeocodingProvider().geocode(
   //   candidateAttributeSelect.address!
   // );
-  const userGPSAddress = candidateAttributeSelect.gps_location;
+  const userGPSAddress = candidateAttributeSelect.gps_location!.reverse();
 
   // Get the user's languages
   const userLanguages = await db
@@ -171,8 +171,8 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
     diploma: userEducation.reduce((acc: number, education) => {
       const n_years = convertDiplomaToYears(education.education.diploma);
       return acc + n_years;
-    }, 0),
-    seniority: candidateAttributeSelect.lookingForExperience,
+    }, 1),
+    seniority: candidateAttributeSelect.lookingForExperience ?? 1, // FIXME: Add a way to insert a value for this when creating / updating a candidate
     languages: languagesDict,
     hardskills: hardskillsDict,
     softskills: softskillsDict,
@@ -204,7 +204,7 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
     return {
       // id: offer.id,
       jobTitle: offer.title,
-      location: offer.gps_location,
+      location: offer.gps_location!.reverse(),
       diploma: offer.education.reduce((acc: number, education) => {
         const n_years = convertDiplomaToYears(education.diploma);
         return acc > n_years ? acc : n_years;
