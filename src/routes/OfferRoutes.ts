@@ -16,8 +16,230 @@ import { OfferNotFoundError } from "../exceptions/OfferExceptions";
 import authenticationMiddleware from "../middlewares/authentication";
 import CompanyRepository from "../db/repositories/CompanyRepository";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
+import { db } from "../db";
+import {
+  candidateUsersTable,
+  educationTable,
+  experienceSkillsTable,
+  experiencesTable,
+  languagesTable,
+  projectsSkillsTable,
+  projectsTable,
+  skillsTable,
+  userEducationTable,
+  userExperiencesTable,
+  usersLanguagesTable,
+} from "../db/schema";
+import { eq, sql } from "drizzle-orm";
+import GeocodingProvider from "../providers/GeocodingProvider";
+import CandidateRepository from "../db/repositories/CandidateRepository";
+import OfferRepository from "../db/repositories/OfferRepository";
 
 const router = Router();
+
+// Sort jobs using the LLM
+router.get("/sort", authenticationMiddleware, async (request, response) => {
+  // TODO: To be cleaned later...
+
+  const candidateAttributeSelect = (
+    await db
+      .select()
+      .from(candidateUsersTable)
+      .where(eq(candidateUsersTable.user, parseInt(request.params.userId)))
+  )[0];
+
+  // TODO: Check that the user has an address
+  // const userGPSAddress = new GeocodingProvider().geocode(
+  //   candidateAttributeSelect.address!
+  // );
+  const userGPSAddress = candidateAttributeSelect.gps_location;
+
+  // Get the user's languages
+  const userLanguages = await db
+    .select()
+    .from(usersLanguagesTable)
+    .where(eq(usersLanguagesTable.id_user, parseInt(request.params.userId)))
+    .innerJoin(
+      languagesTable,
+      eq(languagesTable.id, usersLanguagesTable.id_language)
+    );
+
+  // Get the user's skills from their experiences and projects
+  const userSkillsProjects = await db
+    .selectDistinct({
+      name: skillsTable.name,
+      type: skillsTable.type,
+      category: skillsTable.category,
+      count: sql`COUNT(*)`,
+    })
+    .from(projectsTable)
+    .where(eq(projectsTable.id_user, parseInt(request.params.userId)))
+    .innerJoin(
+      projectsSkillsTable,
+      eq(projectsSkillsTable.id_project, projectsTable.id)
+    )
+    .innerJoin(skillsTable, eq(skillsTable.id, projectsSkillsTable.id_skill))
+    .groupBy(skillsTable.name, skillsTable.type, skillsTable.category);
+
+  const userSkillsExperiences = await db
+    .selectDistinct({
+      name: skillsTable.name,
+      type: skillsTable.type,
+      category: skillsTable.category,
+      count: sql`COUNT(*)`,
+    })
+    .from(userExperiencesTable)
+    .where(eq(userExperiencesTable.id_user, parseInt(request.params.userId)))
+    .innerJoin(
+      experiencesTable,
+      eq(experiencesTable.id, userExperiencesTable.id_experience)
+    )
+    .innerJoin(
+      experienceSkillsTable,
+      eq(experienceSkillsTable.id_experience, experiencesTable.id)
+    )
+    .innerJoin(skillsTable, eq(skillsTable.id, experienceSkillsTable.id_skill))
+    .groupBy(skillsTable.name, skillsTable.type, skillsTable.category);
+
+  // Join the two lists of skills
+  const userSkills = userSkillsProjects.concat(userSkillsExperiences);
+
+  // Separate the user's skills into types
+  const hardskills = userSkills.filter((skill) => skill.type === "Hardskill");
+  const hardskillsDict: { [key: string]: number } = {};
+  hardskills.forEach((skill) => {
+    hardskillsDict[skill.name] = parseInt(skill.count as string);
+  });
+  const softskills = userSkills.filter((skill) => skill.type === "Softskill");
+  const softskillsDict: { [key: string]: number } = {};
+  softskills.forEach((skill) => {
+    softskillsDict[skill.name] = parseInt(skill.count as string);
+  });
+
+  // Sum the number of year studies for the candidate
+  const userEducation = await db
+    .select()
+    .from(userEducationTable)
+    .where(eq(userEducationTable.id_user, parseInt(request.params.userId)))
+    .innerJoin(
+      educationTable,
+      eq(educationTable.id, userEducationTable.id_education)
+    );
+
+  const convertLanguageLevelToNumber = (level: string): number => {
+    switch (level) {
+      case "beginner":
+        return 1;
+      case "intermediate":
+        return 2;
+      case "confirmed":
+        return 3;
+      case "native":
+        return 4;
+      default:
+        return 0;
+    }
+  };
+  let languagesDict: { [key: string]: number } = {};
+  userLanguages.forEach((language) => {
+    languagesDict[language.languages.name] = convertLanguageLevelToNumber(
+      language.users_languages.level
+    );
+  });
+
+  const convertDiplomaToYears = (diploma: string): number => {
+    let n_years = 0;
+    switch (diploma) {
+      case "BTS":
+      case "DUT":
+        n_years = 2;
+        break;
+      case "License":
+      case "Bachelor":
+        n_years = 3;
+        break;
+      case "Master":
+      case "Engineer":
+        n_years = 5;
+        break;
+    }
+    return n_years;
+  };
+
+  const candidate_attribute = {
+    location: userGPSAddress,
+    diploma: userEducation.reduce((acc: number, education) => {
+      const n_years = convertDiplomaToYears(education.education.diploma);
+      return acc + n_years;
+    }, 0),
+    seniority: candidateAttributeSelect.lookingForExperience,
+    languages: languagesDict,
+    hardskills: hardskillsDict,
+    softskills: softskillsDict,
+  };
+
+  const offers = (await new OfferRepository().getAll()).map((offer) => {
+    const hardskills = offer.skills
+      .filter((skill) => skill.type === "Hardskill")
+      .reduce((acc: { [key: string]: number }, cv) => {
+        acc[cv.name] = (acc[cv.name] || 0) + 1;
+        return acc;
+      }, {});
+
+    const softskills = offer.skills
+      .filter((skill) => skill.type === "Softskill")
+      .reduce((acc: { [key: string]: number }, cv) => {
+        acc[cv.name] = (acc[cv.name] || 0) + 1;
+        return acc;
+      }, {});
+
+    // Languages
+    let languagesDict: { [key: string]: number } = {};
+    offer.languages.forEach((language) => {
+      languagesDict[language.name] = convertLanguageLevelToNumber(
+        language.level
+      );
+    });
+
+    return {
+      // id: offer.id,
+      jobTitle: offer.title,
+      location: offer.gps_location,
+      diploma: offer.education.reduce((acc: number, education) => {
+        const n_years = convertDiplomaToYears(education.diploma);
+        return acc > n_years ? acc : n_years;
+      }, 0),
+      seniority: 1, // FIXME: Add seniority to the offers
+      languages: languagesDict,
+      hardskills: hardskills,
+      softskills: softskills,
+    };
+  });
+
+  // Format the request
+  const llmRequest = {
+    user_job_title_emb: request.body.user_job_title_emb,
+    candidate_weights: {
+      hardskills: hardskillsDict,
+      softskills: softskillsDict,
+      languages: languagesDict,
+    },
+    candidate_attribute: candidate_attribute,
+    job_offers: offers,
+  };
+
+  const llmResponse = await fetch("http://localhost:5000/sort_jobs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(llmRequest),
+  });
+
+  // console.log(llmRequest);
+  // response.json(llmRequest);
+  response.json(await llmResponse.json());
+});
 
 // Create a new offer
 router.post("/", authenticationMiddleware, async (request, response) => {
