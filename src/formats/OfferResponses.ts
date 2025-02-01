@@ -60,9 +60,13 @@ export interface GetLikedOffersResponse
     InferSelectModel<typeof jobOffersTable> & { company_name: string }
   > {}
 
-export interface LikeOfferResponse {}
+export interface LikeOfferResponse {
+  liked_offers_number: number;
+}
 
-export interface UnlikeOfferResponse {}
+export interface UnlikeOfferResponse {
+  liked_offers_number: number;
+}
 
 export interface ApplyOfferResponse {
   id: number;
