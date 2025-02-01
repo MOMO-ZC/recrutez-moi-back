@@ -498,7 +498,7 @@ export default class OfferRepository implements IOfferRepository {
   async addEducation(offerId: number, education: number[]): Promise<null> {
     await db.insert(jobOfferEducationsTable).values(
       education.map((id_education) => ({
-        id_offer: offerId,
+        id_job_offer: offerId,
         id_education: id_education,
       }))
     );
@@ -509,7 +509,7 @@ export default class OfferRepository implements IOfferRepository {
   async addExperiences(offerId: number, experiences: number[]): Promise<null> {
     await db.insert(jobOfferExperiencesTable).values(
       experiences.map((id_experience) => ({
-        id_offer: offerId,
+        id_job_offer: offerId,
         id_experience: id_experience,
       }))
     );
