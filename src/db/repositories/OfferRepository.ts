@@ -397,6 +397,7 @@ export default class OfferRepository implements IOfferRepository {
   async getAllWithLiked(userId: number): Promise<
     (Offer & {
       company_name: string;
+      applied: boolean;
       liked: boolean;
       skills: { id: number; name: string; type: string; category: string }[];
       education: { id: number; domain: string; diploma: string }[];
@@ -431,6 +432,7 @@ export default class OfferRepository implements IOfferRepository {
       offers.map(async (offer) => ({
         ...offer,
         liked: await this.doesUserLike(offer.id, userId),
+        applied: await this.hasUserApplied(offer.id, userId),
         skills: await db
           .select({
             id: skillsTable.id,
@@ -533,8 +535,8 @@ export default class OfferRepository implements IOfferRepository {
 
   async getLiked(
     userId: number
-  ): Promise<(Offer & { company_name: string })[]> {
-    return db
+  ): Promise<(Offer & { company_name: string; applied: boolean })[]> {
+    const offers = await db
       .select({
         id: jobOffersTable.id,
         id_company: jobOffersTable.id_company,
@@ -561,6 +563,13 @@ export default class OfferRepository implements IOfferRepository {
         eq(companiesTable.id, jobOffersTable.id_company)
       )
       .where(eq(usersLikedJobOffersTable.id_user, userId));
+
+    return await Promise.all(
+      offers.map(async (offer) => ({
+        ...offer,
+        applied: await this.hasUserApplied(offer.id, userId),
+      }))
+    );
   }
 
   async doesUserLike(offerId: number, userId: number): Promise<boolean> {

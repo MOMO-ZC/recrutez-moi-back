@@ -1,5 +1,6 @@
 export interface AboutCandidateResponse {
   id: number;
+  email: string;
   firstname: string;
   lastname: string;
   phone?: string;
@@ -7,6 +8,12 @@ export interface AboutCandidateResponse {
   birthdate: string;
   lookingForTitle?: string;
   lookingForExperience?: number;
+  languages?: {
+    id: number;
+    name: string;
+    level: string;
+  }[];
+  hobbies?: { name: string }[];
 }
 
 export interface GetCandidateEducationResponse {

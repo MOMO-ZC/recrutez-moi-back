@@ -1,9 +1,18 @@
-import { InferInsertModel, InferSelectModel, and, eq } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, and, eq, sql } from "drizzle-orm";
 import ICandidateRepository from "./ICandidateRepository";
 import {
   candidateUsersTable,
   educationsTable,
+  experienceSkillsTable,
+  experiencesTable,
+  languagesTable,
+  projectsSkillsTable,
+  projectsTable,
+  skillsTable,
   userEducationsTable,
+  userExperiencesTable,
+  userHobbiesTable,
+  usersLanguagesTable,
   usersTable,
 } from "../schema";
 import { db } from "..";
@@ -265,5 +274,106 @@ export default class CandidateRepository implements ICandidateRepository {
           eq(userEducationsTable.id_education, id_education)
         )
       );
+  }
+
+  async getCandidateSkills(id_candidate: number): Promise<{
+    skills: { id: number; name: string; type: string; category: string }[];
+  }> {
+    // Get the user's skills from their experiences and projects
+    const userSkillsProjects = await db
+      .selectDistinct({
+        id: skillsTable.id,
+        name: skillsTable.name,
+        type: skillsTable.type,
+        category: skillsTable.category,
+      })
+      .from(projectsTable)
+      .where(eq(projectsTable.id_user, id_candidate))
+      .innerJoin(
+        projectsSkillsTable,
+        eq(projectsSkillsTable.id_project, projectsTable.id)
+      )
+      .innerJoin(skillsTable, eq(skillsTable.id, projectsSkillsTable.id_skill))
+      .groupBy(
+        skillsTable.id,
+        skillsTable.name,
+        skillsTable.type,
+        skillsTable.category
+      );
+
+    const userSkillsExperiences = await db
+      .selectDistinct({
+        id: skillsTable.id,
+        name: skillsTable.name,
+        type: skillsTable.type,
+        category: skillsTable.category,
+      })
+      .from(userExperiencesTable)
+      .where(eq(userExperiencesTable.id_user, id_candidate))
+      .innerJoin(
+        experiencesTable,
+        eq(experiencesTable.id, userExperiencesTable.id_experience)
+      )
+      .innerJoin(
+        experienceSkillsTable,
+        eq(experienceSkillsTable.id_experience, experiencesTable.id)
+      )
+      .innerJoin(
+        skillsTable,
+        eq(skillsTable.id, experienceSkillsTable.id_skill)
+      )
+      .groupBy(
+        skillsTable.id,
+        skillsTable.name,
+        skillsTable.type,
+        skillsTable.category
+      );
+
+    // Join the two lists of skills
+    const userSkills = userSkillsProjects.concat(userSkillsExperiences);
+
+    return { skills: userSkills };
+  }
+
+  async getCandidateLanguages(
+    id_candidate: number
+  ): Promise<{ languages: { id: number; name: string; level: string }[] }> {
+    return {
+      languages: (
+        await db
+          .select({
+            id: usersLanguagesTable.id_language,
+            name: languagesTable.name,
+            level: usersLanguagesTable.level,
+          })
+          .from(usersLanguagesTable)
+          .where(eq(usersLanguagesTable.id_user, id_candidate))
+          .innerJoin(
+            languagesTable,
+            eq(languagesTable.id, usersLanguagesTable.id_language)
+          )
+      ).map((language) => ({
+        id: language.id as number,
+        name: language.name as string,
+        level: language.level as string,
+      })),
+    };
+  }
+
+  async getCandidateHobbies(
+    id_candidate: number
+  ): Promise<{ hobbies: { name: string }[] }> {
+    return {
+      hobbies: (
+        await db
+          .select({
+            name: userHobbiesTable.name,
+          })
+          .from(userHobbiesTable)
+          .where(eq(userHobbiesTable.id_user, id_candidate))
+      ).map((hobby) => ({
+        name: hobby.name as string,
+      })),
+    };
   }
 }

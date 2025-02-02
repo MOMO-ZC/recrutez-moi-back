@@ -140,4 +140,32 @@ export default interface ICandidateRepository {
    * @param id_education The ID of the education
    */
   DeleteEducation(id_candidate: number, id_education: number): Promise<void>;
+
+  /**
+   * Retrieves the list of a candidate's skills
+   * @param id_candidate The ID of the candidate
+   */
+  getCandidateSkills(id_candidate: number): Promise<{
+    skills: { id: number; name: string; type: string; category: string }[];
+  }>;
+
+  /**
+   * Retrieves the list of a candidate's languages
+   * @param id_candidate The ID of the candidate
+   */
+  getCandidateLanguages(id_candidate: number): Promise<{
+    languages: {
+      id: number;
+      name: string;
+      level: string;
+    }[];
+  }>;
+
+  /**
+   * Retrieves the list of a candidate's hobbies
+   * @param id_candidate The ID of the candidate
+   */
+  getCandidateHobbies(
+    id_candidate: number
+  ): Promise<{ hobbies: { name: string }[] }>;
 }

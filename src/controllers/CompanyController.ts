@@ -21,8 +21,14 @@ export const AboutCompany = async (
     throw new Error("Company not found");
   }
 
+  const user = await companyRepository.findUser(company.id);
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
   return {
     id: company.id,
+    email: user.email,
     name: company.name,
     created_at: new Date(company.created_at),
     modified_at: new Date(company.modified_at),

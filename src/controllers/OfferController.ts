@@ -177,14 +177,22 @@ export const LikeOffer = async (
   if (userAlreadyLikes === false) {
     await offerRepository.like(request.id_offer, request.id_user);
   }
-  return {};
+
+  const number_of_liked_offers = (
+    await offerRepository.getLiked(request.id_user)
+  ).length;
+  return { liked_offers_number: number_of_liked_offers };
 };
 
 export const UnlikeOffer = async (
   request: LikeOfferRequest
 ): Promise<LikeOfferResponse> => {
   await offerRepository.unlike(request.id_offer, request.id_user);
-  return {};
+
+  const number_of_liked_offers = (
+    await offerRepository.getLiked(request.id_user)
+  ).length;
+  return { liked_offers_number: number_of_liked_offers };
 };
 
 export const ApplyOffer = async (
