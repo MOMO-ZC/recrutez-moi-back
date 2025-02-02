@@ -5,6 +5,7 @@ import {
   AddCandidateEducation,
   DeleteCandidateEducation,
   GetCandidateEducations,
+  GetCandidateSkills,
   UpdateCandidate,
 } from "../controllers/CandidateController";
 import { UserNotFoundError } from "../exceptions/UserExceptions";
@@ -214,6 +215,15 @@ router.get("/:id/educations", async (request, response) => {
   const controllerResponse = await GetCandidateEducations({
     id_candidate: parseInt(request.params.id),
   });
+
+  response.json(controllerResponse);
+});
+
+// Get candidate skills
+router.get("/:id/skills", async (request, response) => {
+  const controllerResponse = await GetCandidateSkills(
+    parseInt(request.params.id)
+  );
 
   response.json(controllerResponse);
 });

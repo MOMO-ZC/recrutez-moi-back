@@ -187,3 +187,11 @@ export const DeleteCandidateEducation = async (
     request.id_education
   );
 };
+
+export const GetCandidateSkills = async (
+  id_candidate: number
+): Promise<{
+  skills: { id: number; name: string; type: string; category: string }[];
+}> => {
+  return await candidateRepository.getCandidateSkills(id_candidate);
+};
