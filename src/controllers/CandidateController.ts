@@ -17,6 +17,7 @@ import GeocodingProvider from "../providers/GeocodingProvider";
 import PasswordProvider from "../providers/PasswordProvider";
 import { UnauthorizedAccessError } from "../exceptions/GeneralExceptions";
 import EducationRepository from "../db/repositories/EducationRepository";
+import UserRepository from "../db/repositories/UserRepository";
 
 const passwordProvider = new PasswordProvider();
 const candidateRepository = new CandidateRepository();
@@ -35,13 +36,15 @@ export const AboutCandidate = async (
     // TODO: Do that.
   }
   const candidate = await candidateRepository.findById(request.id);
+  const user = await new UserRepository().findById(request.id);
 
-  if (!candidate) {
+  if (!candidate || !user) {
     throw new UserNotFoundError();
   }
 
   return {
     id: candidate.user,
+    email: user.email,
     firstname: candidate.firstname,
     lastname: candidate.lastname,
     phone: candidate.phone || undefined,
