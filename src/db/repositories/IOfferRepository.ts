@@ -100,6 +100,8 @@ export default interface IOfferRepository {
   getAllWithLiked(userId: number): Promise<
     (Offer & {
       liked: boolean;
+      company_name: string;
+      applied: boolean;
       skills: { id: number; name: string; type: string; category: string }[];
       education: { id: number; domain: string; diploma: string }[];
       experiences: { id: number; name: string }[];
@@ -141,7 +143,9 @@ export default interface IOfferRepository {
    * Retrieves all offers that a user has liked
    * @param userId The id of the user to get liked offers for
    */
-  getLiked(userId: number): Promise<Offer[]>;
+  getLiked(
+    userId: number
+  ): Promise<(Offer & { company_name: string; applied: boolean })[]>;
 
   /**
    * Returns whether a user has liked a specific offer

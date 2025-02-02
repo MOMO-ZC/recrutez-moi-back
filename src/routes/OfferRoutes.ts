@@ -31,8 +31,6 @@ import {
   usersLanguagesTable,
 } from "../db/schema";
 import { eq, sql } from "drizzle-orm";
-import GeocodingProvider from "../providers/GeocodingProvider";
-import CandidateRepository from "../db/repositories/CandidateRepository";
 import OfferRepository from "../db/repositories/OfferRepository";
 
 const router = Router();
