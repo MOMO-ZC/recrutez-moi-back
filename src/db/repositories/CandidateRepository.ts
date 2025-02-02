@@ -5,11 +5,14 @@ import {
   educationsTable,
   experienceSkillsTable,
   experiencesTable,
+  languagesTable,
   projectsSkillsTable,
   projectsTable,
   skillsTable,
   userEducationsTable,
   userExperiencesTable,
+  userHobbiesTable,
+  usersLanguagesTable,
   usersTable,
 } from "../schema";
 import { db } from "..";
@@ -330,5 +333,47 @@ export default class CandidateRepository implements ICandidateRepository {
     const userSkills = userSkillsProjects.concat(userSkillsExperiences);
 
     return { skills: userSkills };
+  }
+
+  async getCandidateLanguages(
+    id_candidate: number
+  ): Promise<{ languages: { id: number; name: string; level: string }[] }> {
+    return {
+      languages: (
+        await db
+          .select({
+            id: usersLanguagesTable.id_language,
+            name: languagesTable.name,
+            level: usersLanguagesTable.level,
+          })
+          .from(usersLanguagesTable)
+          .where(eq(usersLanguagesTable.id_user, id_candidate))
+          .innerJoin(
+            languagesTable,
+            eq(languagesTable.id, usersLanguagesTable.id_language)
+          )
+      ).map((language) => ({
+        id: language.id as number,
+        name: language.name as string,
+        level: language.level as string,
+      })),
+    };
+  }
+
+  async getCandidateHobbies(
+    id_candidate: number
+  ): Promise<{ hobbies: { name: string }[] }> {
+    return {
+      hobbies: (
+        await db
+          .select({
+            name: userHobbiesTable.name,
+          })
+          .from(userHobbiesTable)
+          .where(eq(userHobbiesTable.id_user, id_candidate))
+      ).map((hobby) => ({
+        name: hobby.name as string,
+      })),
+    };
   }
 }

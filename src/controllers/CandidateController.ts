@@ -38,6 +38,11 @@ export const AboutCandidate = async (
   const candidate = await candidateRepository.findById(request.id);
   const user = await new UserRepository().findById(request.id);
 
+  const userLanguages = await candidateRepository.getCandidateLanguages(
+    request.id
+  );
+  const userHobbies = await candidateRepository.getCandidateHobbies(request.id);
+
   if (!candidate || !user) {
     throw new UserNotFoundError();
   }
@@ -52,6 +57,8 @@ export const AboutCandidate = async (
     birthdate: candidate.birthdate.toISOString(),
     lookingForTitle: candidate.lookingForTitle || undefined,
     lookingForExperience: candidate.lookingForExperience || undefined,
+    languages: userLanguages.languages,
+    hobbies: userHobbies.hobbies,
   };
 };
 
