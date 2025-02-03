@@ -168,4 +168,75 @@ export default interface ICandidateRepository {
   getCandidateHobbies(
     id_candidate: number
   ): Promise<{ hobbies: { name: string }[] }>;
+
+  /**
+   * Add an experience to a candidate
+   * @param id_candidate The ID of the candidate to whom the experience is to be added
+   * @param id_experience The ID of the experience to be added
+   * @param description The description of the experience
+   * @param start The start date of the experience
+   * @param end The end date of the experience
+   */
+  addCandidateExperience(
+    id_candidate: number,
+    id_experience: number,
+    description: string,
+    start: Date,
+    end: Date
+  ): Promise<{
+    experience: {
+      id: number;
+      name: string;
+    };
+    id_user: number;
+    description: string;
+    start: Date;
+    end: Date;
+    created_at: Date;
+    modified_at: Date;
+  }>;
+
+  /**
+   * Retrieves a candidate's experience by its ID
+   * @param id_candidate The ID of the candidate
+   * @param id_experience The ID of the experience
+   */
+  getCandidateExperienceById(
+    id_candidate: number,
+    id_experience: number
+  ): Promise<{
+    id: number;
+    name: string;
+    description: string;
+    start: Date;
+    end: Date;
+    created_at: Date;
+    modified_at: Date;
+  }>;
+
+  /**
+   * Retrieves the list of a candidate's experiences
+   * @param id_candidate The ID of the candidate
+   */
+  getCandidateExperiences(id_candidate: number): Promise<{
+    experiences: {
+      id: number;
+      name: string;
+      description: string;
+      start: Date;
+      end: Date;
+      created_at: Date;
+      modified_at: Date;
+    }[];
+  }>;
+
+  /**
+   * Removes an experience from a candidate
+   * @param id_candidate The ID of the candidate
+   * @param id_experience The ID of the experience
+   */
+  deleteCandidateExperience(
+    id_candidate: number,
+    id_experience: number
+  ): Promise<void>;
 }

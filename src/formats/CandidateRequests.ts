@@ -46,3 +46,34 @@ export interface DeleteCandidateEducationRequest {
   id_candidate: number;
   id_education: number;
 }
+
+export interface AddExperienceRequest {
+  id_candidate: number;
+  id_experience: number;
+  description: string;
+  start: Date;
+  end: Date;
+}
+
+export interface UpdateExperienceRequest {
+  id_candidate: number; // Set in the route parameters
+  id_experience: number; // Set in the route parameters
+  name?: string; // Will chage the id_experience if specified to match with the correct one.
+  description?: string;
+  start?: Date;
+  end?: Date;
+}
+
+export interface GetExperienceRequest {
+  id_candidate: number; // Set in the route parameters
+  id_experience: number; // Set in the route parameters
+}
+
+export interface GetExperiencesRequest {
+  id_candidate: number; // Set in the route parameters
+}
+
+export interface DeleteCandidateExperienceRequest {
+  id_candidate: number; // Set in the route parameters
+  id_experience: number; // Set in the route parameters
+}

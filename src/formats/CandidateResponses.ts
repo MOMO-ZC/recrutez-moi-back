@@ -43,3 +43,13 @@ export interface GetCandidateEducationsResponse {
     modified_at: Date;
   }[];
 }
+
+export interface GetExperienceResponse {
+  id: number;
+  name: string;
+  description: string;
+  start: Date;
+  end: Date;
+  created_at: Date;
+  modified_at: Date;
+}

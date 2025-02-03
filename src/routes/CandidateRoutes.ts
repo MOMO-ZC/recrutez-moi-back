@@ -3,8 +3,12 @@ import { registerCandidate } from "../controllers/AuthenticationController";
 import {
   AboutCandidate,
   AddCandidateEducation,
+  AddCandidateExperience,
   DeleteCandidateEducation,
+  DeleteCandidateExperience,
   GetCandidateEducations,
+  GetCandidateExperienceById,
+  GetCandidateExperiences,
   GetCandidateSkills,
   UpdateCandidate,
 } from "../controllers/CandidateController";
@@ -227,5 +231,57 @@ router.get("/:id/skills", async (request, response) => {
 
   response.json(controllerResponse);
 });
+
+// Get candidate experiences
+router.get("/:id/experiences", async (request, response) => {
+  const controllerResponse = await GetCandidateExperiences({
+    id_candidate: parseInt(request.params.id),
+  });
+
+  response.json(controllerResponse);
+});
+
+// Get candidate experience by id
+router.get("/:id/experiences/:id_experience", async (request, response) => {
+  const controllerResponse = await GetCandidateExperienceById({
+    id_candidate: parseInt(request.params.id),
+    id_experience: parseInt(request.params.id_experience),
+  });
+
+  response.json(controllerResponse);
+});
+
+// Add a candidate experience
+router.post("/:id/experiences", async (request, response) => {
+  const controllerResponse = await AddCandidateExperience({
+    id_candidate: parseInt(request.params.id),
+    id_experience: parseInt(request.body.id_experience),
+    description: request.body.description,
+    start: new Date(request.body.start),
+    end: new Date(request.body.end),
+  });
+
+  response.json(controllerResponse);
+});
+
+// Delete a candidate experience
+router.delete(
+  "/:id/experiences/:id_experience",
+  authenticationMiddleware,
+  async (request, response) => {
+    // Check authorizations
+    if (parseInt(request.params.id) !== parseInt(request.params.userId)) {
+      response.status(401).send("Unauthorized access");
+      return;
+    }
+
+    const controllerResponse = await DeleteCandidateExperience({
+      id_candidate: parseInt(request.params.id),
+      id_experience: parseInt(request.params.id_experience),
+    });
+
+    response.json(controllerResponse);
+  }
+);
 
 export default router;
