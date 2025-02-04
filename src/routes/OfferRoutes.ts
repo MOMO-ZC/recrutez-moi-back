@@ -223,7 +223,8 @@ router.get("/sort", authenticationMiddleware, async (request, response) => {
     job_offers: offers,
   };
 
-  const llmResponse = await fetch("http://localhost:5000/sort_jobs", {
+  const server_ip = process.env.LLM_SERVER_IP || "84.235.238.233:5000";
+  const llmResponse = await fetch(`http://${server_ip}/sort_jobs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
