@@ -1,10 +1,12 @@
 export interface CreateExperienceRequest {
   name: string;
+  skills?: number[]; // References skill IDs
 }
 
 export interface UpdateExperienceRequest {
   id: number; // Set in the route parameters
   name?: string;
+  skills?: number[]; // References skill IDs
 }
 
 export interface DeleteExperienceRequest {

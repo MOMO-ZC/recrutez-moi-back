@@ -13,11 +13,15 @@ const experienceRepository = new ExperienceRepository();
 export const CreateExperience = async (
   request: CreateExperienceRequest
 ): Promise<GetExperienceResponse> => {
-  const result = await experienceRepository.createExperience(request.name);
+  const result = await experienceRepository.createExperience(
+    request.name,
+    request.skills
+  );
 
   return {
     id: result.id,
     name: result.name,
+    skills: result.skills,
   };
 };
 
@@ -29,6 +33,7 @@ export const GetExperienceById = async (
   return {
     id: result.id,
     name: result.name,
+    skills: result.skills,
   };
 };
 
@@ -45,7 +50,8 @@ export const UpdateExperience = async (
 ): Promise<GetExperienceResponse> => {
   const result = await experienceRepository.updateExperience(
     request.id,
-    request.name
+    request.name,
+    request.skills
   );
 
   return result;

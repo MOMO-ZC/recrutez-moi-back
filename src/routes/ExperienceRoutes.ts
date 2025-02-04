@@ -13,6 +13,7 @@ const router = Router();
 router.post("/", async (request, response) => {
   const controllerResponse = await CreateExperience({
     name: request.body.name,
+    skills: request.body.skills,
   });
 
   response.json(controllerResponse);
@@ -23,6 +24,7 @@ router.put("/:id", async (request, response) => {
   const controllerResponse = await UpdateExperience({
     id: parseInt(request.params.id),
     name: request.body.name,
+    skills: request.body.skills,
   });
 
   response.json(controllerResponse);
