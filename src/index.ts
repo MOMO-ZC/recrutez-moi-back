@@ -8,6 +8,7 @@ import ApplicationRoutes from "./routes/ApplicationRoutes";
 import ProjectRoutes from "./routes/ProjectRoutes";
 import SkillRoutes from "./routes/SkillRoutes";
 import EducationRoutes from "./routes/EducationRoutes";
+import ExperienceRoutes from "./routes/ExperienceRoutes";
 import errorMiddleware from "./middlewares/errors";
 
 const app: Express = express();
@@ -28,6 +29,7 @@ app.use("/applications", ApplicationRoutes);
 app.use("/projects", ProjectRoutes);
 app.use("/skills", SkillRoutes);
 app.use("/educations", EducationRoutes);
+app.use("/experiences", ExperienceRoutes);
 
 app.use(errorMiddleware);
 

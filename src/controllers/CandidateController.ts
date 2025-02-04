@@ -4,14 +4,20 @@ import {
   AboutCandidateRequest,
   AddCandidateExistingEducationRequest,
   AddCandidateNewEducationRequest,
+  AddExperienceRequest,
   DeleteCandidateEducationRequest,
+  DeleteCandidateExperienceRequest,
   GetCandidateEducationsRequest,
+  GetExperienceRequest,
+  GetExperiencesRequest,
   UpdateCandidateRequest,
+  UpdateExperienceRequest,
 } from "../formats/CandidateRequests";
 import {
   AboutCandidateResponse,
   GetCandidateEducationResponse,
   GetCandidateEducationsResponse,
+  GetExperienceResponse,
 } from "../formats/CandidateResponses";
 import GeocodingProvider from "../providers/GeocodingProvider";
 import PasswordProvider from "../providers/PasswordProvider";
@@ -204,4 +210,64 @@ export const GetCandidateSkills = async (
   skills: { id: number; name: string; type: string; category: string }[];
 }> => {
   return await candidateRepository.getCandidateSkills(id_candidate);
+};
+
+export const AddCandidateExperience = async (
+  request: AddExperienceRequest
+): Promise<GetExperienceResponse> => {
+  const result = await candidateRepository.addCandidateExperience(
+    request.id_candidate,
+    request.id_experience,
+    request.description,
+    request.start,
+    request.end
+  );
+
+  return {
+    id: result.experience.id,
+    name: result.experience.name,
+    description: result.description,
+    start: result.start,
+    end: result.end,
+    created_at: result.created_at,
+    modified_at: result.modified_at,
+  };
+};
+
+export const GetCandidateExperienceById = async (
+  request: GetExperienceRequest
+): Promise<GetExperienceResponse> => {
+  const result = await candidateRepository.getCandidateExperienceById(
+    request.id_candidate,
+    request.id_experience
+  );
+
+  return {
+    id: result.id,
+    name: result.name,
+    description: result.description,
+    start: result.start,
+    end: result.end,
+    created_at: result.created_at,
+    modified_at: result.modified_at,
+  };
+};
+
+export const GetCandidateExperiences = async (
+  request: GetExperiencesRequest
+): Promise<{ experiences: GetExperienceResponse[] }> => {
+  const result = await candidateRepository.getCandidateExperiences(
+    request.id_candidate
+  );
+
+  return result;
+};
+
+export const DeleteCandidateExperience = async (
+  request: DeleteCandidateExperienceRequest
+): Promise<void> => {
+  await candidateRepository.deleteCandidateExperience(
+    request.id_candidate,
+    request.id_experience
+  );
 };

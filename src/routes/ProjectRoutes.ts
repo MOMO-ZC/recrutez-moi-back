@@ -37,13 +37,6 @@ router.get("/:id", async (request, response) => {
   response.json(controllerResponse);
 });
 
-// Get all project
-// router.get("/", async (request, response) => {
-//   const controllerResponse = await getProjects();
-
-//   response.json(controllerResponse);
-// });
-
 // Get the user's projects
 router.get("/", authenticationMiddleware, async (request, response) => {
   const controllerResponse = await getProjectsOfUser({

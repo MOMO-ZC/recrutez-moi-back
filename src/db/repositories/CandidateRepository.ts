@@ -376,4 +376,151 @@ export default class CandidateRepository implements ICandidateRepository {
       })),
     };
   }
+
+  async addCandidateExperience(
+    id_candidate: number,
+    id_experience: number,
+    description: string,
+    start: Date,
+    end: Date
+  ): Promise<{
+    experience: { id: number; name: string };
+    id_user: number;
+    description: string;
+    start: Date;
+    end: Date;
+    created_at: Date;
+    modified_at: Date;
+  }> {
+    const newUserExperience = await db
+      .insert(userExperiencesTable)
+      .values({
+        id_experience: id_experience,
+        id_user: id_candidate,
+        description: description,
+        start: start.toISOString(),
+        end: end.toISOString(),
+        created_at: new Date().toISOString(),
+        modified_at: new Date().toISOString(),
+      })
+      .returning();
+
+    // Get information about the experience
+    const experience = await db
+      .select()
+      .from(experiencesTable)
+      .where(eq(experiencesTable.id, id_experience));
+
+    return {
+      experience: experience[0],
+      id_user: newUserExperience[0].id_user as number,
+      description: newUserExperience[0].description!,
+      start: new Date(newUserExperience[0].start!),
+      end: new Date(newUserExperience[0].end!),
+      created_at: new Date(newUserExperience[0].created_at),
+      modified_at: new Date(newUserExperience[0].modified_at),
+    };
+  }
+
+  async getCandidateExperienceById(
+    id_candidate: number,
+    id_experience: number
+  ): Promise<{
+    id: number;
+    name: string;
+    description: string;
+    start: Date;
+    end: Date;
+    created_at: Date;
+    modified_at: Date;
+  }> {
+    const experience = (
+      await db
+        .select({
+          id: experiencesTable.id,
+          name: experiencesTable.name,
+          description: userExperiencesTable.description,
+          start: userExperiencesTable.start,
+          end: userExperiencesTable.end,
+          created_at: userExperiencesTable.created_at,
+          modified_at: userExperiencesTable.modified_at,
+        })
+        .from(userExperiencesTable)
+        .where(
+          and(
+            eq(userExperiencesTable.id_user, id_candidate),
+            eq(userExperiencesTable.id_experience, id_experience)
+          )
+        )
+        .innerJoin(
+          experiencesTable,
+          eq(experiencesTable.id, userExperiencesTable.id_experience)
+        )
+    )[0];
+
+    return {
+      id: experience.id,
+      name: experience.name,
+      description: experience.description ?? "",
+      start: experience.start ? new Date(experience.start) : new Date(), // FIXME: Should throw an error
+      end: experience.end ? new Date(experience.end) : new Date(), // FIXME: Should throw an error
+      created_at: new Date(experience.created_at),
+      modified_at: new Date(experience.modified_at),
+    };
+  }
+
+  async getCandidateExperiences(id_candidate: number): Promise<{
+    experiences: {
+      id: number;
+      name: string;
+      description: string;
+      start: Date;
+      end: Date;
+      created_at: Date;
+      modified_at: Date;
+    }[];
+  }> {
+    // FIXME: NOT WORKING FOR SOME UNKNOWN REASON
+
+    const experiences = await db
+      .select()
+      .from(userExperiencesTable)
+      .where(eq(userExperiencesTable.id_user, id_candidate))
+      .innerJoin(
+        experiencesTable,
+        eq(experiencesTable.id, userExperiencesTable.id_experience)
+      );
+
+    const experiencesMap = experiences.map((experience) => ({
+      id: experience.experiences.id,
+      name: experience.experiences.name,
+      description: experience.userExperiences.description ?? "",
+      start: experience.userExperiences.start
+        ? new Date(experience.userExperiences.start)
+        : new Date(),
+      end: experience.userExperiences.end
+        ? new Date(experience.userExperiences.end)
+        : new Date(),
+      created_at: new Date(experience.userExperiences.created_at),
+      modified_at: new Date(experience.userExperiences.modified_at),
+    }));
+
+    return {
+      experiences: experiencesMap,
+    };
+  }
+
+  async deleteCandidateExperience(
+    id_candidate: number,
+    id_experience: number
+  ): Promise<void> {
+    await db
+      .delete(userExperiencesTable)
+      .where(
+        and(
+          eq(userExperiencesTable.id_user, id_candidate),
+          eq(userExperiencesTable.id_experience, id_experience)
+        )
+      );
+  }
 }
