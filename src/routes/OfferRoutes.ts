@@ -36,7 +36,7 @@ import OfferRepository from "../db/repositories/OfferRepository";
 const router = Router();
 
 // Sort jobs using the LLM
-router.get("/sort", authenticationMiddleware, async (request, response) => {
+router.post("/sort", authenticationMiddleware, async (request, response) => {
   // TODO: To be cleaned later...
 
   const candidateAttributeSelect = (
