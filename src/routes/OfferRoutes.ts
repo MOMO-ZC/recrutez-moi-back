@@ -197,7 +197,7 @@ router.post("/sort", authenticationMiddleware, async (request, response) => {
     });
 
     return {
-      // id: offer.id,
+      id: offer.id,
       jobTitle: offer.title,
       location: offer.gps_location!.reverse(),
       diploma: offer.education.reduce((acc: number, education) => {
