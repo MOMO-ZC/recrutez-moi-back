@@ -7,6 +7,9 @@ const errorMiddleware = (
   response: Response,
   next: NextFunction
 ) => {
+  console.log(error);
+  console.log(error.message);
+  console.log(error.stack);
   response
     .status(500)
     .json(
