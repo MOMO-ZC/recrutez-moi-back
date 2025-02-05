@@ -214,11 +214,12 @@ router.post("/sort", authenticationMiddleware, async (request, response) => {
   // Format the request
   const llmRequest = {
     user_job_title_emb: request.body.user_job_title_emb,
-    candidate_weights: {
-      hardskills: hardskillsDict,
-      softskills: softskillsDict,
-      languages: languagesDict,
-    },
+    // candidate_weights: {
+    //   hardskills: hardskillsDict,
+    //   softskills: softskillsDict,
+    //   languages: languagesDict,
+    // },
+    candidate_weights: request.body.candidate_weights,
     candidate_attribute: candidate_attribute,
     job_offers: offers,
   };
